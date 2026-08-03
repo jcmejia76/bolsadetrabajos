@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "JobStatus" ADD VALUE 'CAMBIOS_SOLICITADOS';

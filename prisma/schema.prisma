@@ -1,0 +1,458 @@
+// Prisma schema — Bolsa de Trabajos
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ========================= ENUMS =========================
+
+enum Role {
+  ADMINISTRADOR
+  EMPRESA
+  CANDIDATO
+}
+
+enum CompanyStatus {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  SUSPENDIDA
+}
+
+enum JobStatus {
+  BORRADOR
+  PENDIENTE_APROBACION
+  APROBADA
+  RECHAZADA
+  CAMBIOS_SOLICITADOS
+  PUBLICADA
+  CERRADA
+  EXPIRADA
+}
+
+enum JobModalidad {
+  PRESENCIAL
+  REMOTO
+  HIBRIDO
+}
+
+enum JobJornada {
+  TIEMPO_COMPLETO
+  MEDIO_TIEMPO
+  TEMPORAL
+  FREELANCE
+  PASANTIA
+}
+
+enum ExperienceLevel {
+  SIN_EXPERIENCIA
+  JUNIOR
+  SEMI_SENIOR
+  SENIOR
+  GERENCIAL
+  DIRECTIVO
+}
+
+enum AcademicLevel {
+  SECUNDARIA
+  TECNICO
+  UNIVERSITARIO_EN_CURSO
+  UNIVERSITARIO_GRADUADO
+  POSTGRADO
+  MAESTRIA
+  DOCTORADO
+}
+
+enum LanguageLevel {
+  BASICO
+  INTERMEDIO
+  AVANZADO
+  NATIVO
+}
+
+enum ApplicationStatus {
+  RECIBIDA
+  EN_REVISION
+  VISTA
+  PRESELECCIONADO
+  ENTREVISTA
+  RECHAZADO
+  CONTRATADO
+}
+
+enum CVStatus {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+  CAMBIOS_SOLICITADOS
+}
+
+enum CVSourceType {
+  UPLOAD
+  BUILDER
+}
+
+enum NotificationType {
+  EMPRESA_APROBADA
+  EMPRESA_RECHAZADA
+  EMPRESA_SUSPENDIDA
+  OFERTA_APROBADA
+  OFERTA_RECHAZADA
+  OFERTA_CAMBIOS_SOLICITADOS
+  CV_APROBADO
+  CV_RECHAZADO
+  CV_CAMBIOS_SOLICITADOS
+  NUEVA_POSTULACION
+  ESTADO_POSTULACION_CAMBIADO
+  GENERICA
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+  SMS
+  WHATSAPP
+}
+
+// ========================= IDENTITY =========================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company   Company?
+  candidate Candidate?
+
+  notifications       Notification[]
+  auditLogs           AuditLog[]        @relation("AuditActor")
+  approvedCompanies   Company[]         @relation("CompanyApprovedBy")
+  createdJobPostings  JobPosting[]      @relation("JobCreatedBy")
+  approvedJobPostings JobPosting[]      @relation("JobApprovedBy")
+  reviewedCVs         CV[]              @relation("CVReviewedBy")
+  applicationNotes    ApplicationNote[]
+
+  @@index([role])
+}
+
+// ========================= COMPANY =========================
+
+model Company {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  slug         String  @unique
+  logoUrl      String?
+  description  String? @db.Text
+  industry     String?
+  size         String?
+  website      String?
+  email        String
+  phone        String?
+  address      String?
+  city         String?
+  country      String?
+  socialLinks  Json?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  status          CompanyStatus @default(PENDIENTE)
+  rejectionReason String?
+  approvedById    String?
+  approvedBy      User?         @relation("CompanyApprovedBy", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobPostings JobPosting[]
+
+  @@index([status])
+}
+
+// ========================= CANDIDATE =========================
+
+model Candidate {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  firstName        String
+  lastName         String
+  photoUrl         String?
+  phone            String?
+  address          String?
+  birthDate        DateTime?
+  gender           String?
+  nationality      String?
+  aboutMe          String?  @db.Text
+  profession       String?
+  availability     String?
+  salaryAspiration Decimal? @db.Decimal(10, 2)
+  portfolioUrl     String?
+  socialLinks      Json?
+  references       Json?
+  skills           String[]
+  isProfilePublic  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workExperiences WorkExperience[]
+  educations      Education[]
+  certifications  Certification[]
+  languages       CandidateLanguage[]
+  cvs             CV[]
+  applications    Application[]
+
+  @@index([profession])
+}
+
+model WorkExperience {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company     String
+  position    String
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean   @default(false)
+  description String?   @db.Text
+
+  @@index([candidateId])
+}
+
+model Education {
+  id           String    @id @default(cuid())
+  candidateId  String
+  candidate    Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  isCurrent    Boolean   @default(false)
+
+  @@index([candidateId])
+}
+
+model Certification {
+  id            String    @id @default(cuid())
+  candidateId   String
+  candidate     Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name          String
+  issuer        String?
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  credentialUrl String?
+
+  @@index([candidateId])
+}
+
+model CandidateLanguage {
+  id          String        @id @default(cuid())
+  candidateId String
+  candidate   Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  language    String
+  level       LanguageLevel
+
+  @@index([candidateId])
+}
+
+// ========================= CV =========================
+
+model CV {
+  id            String       @id @default(cuid())
+  candidateId   String
+  candidate     Candidate    @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  fileName      String
+  fileUrl       String
+  fileType      String
+  fileSizeBytes Int
+  sourceType    CVSourceType @default(UPLOAD)
+  version       Int          @default(1)
+  isPrimary     Boolean      @default(false)
+
+  status       CVStatus  @default(PENDIENTE)
+  reviewReason String?
+  reviewedById String?
+  reviewedBy   User?     @relation("CVReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Application[]
+
+  @@index([candidateId])
+  @@index([status])
+}
+
+// ========================= JOB POSTING =========================
+
+model JobCategory {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  jobPostings JobPosting[]
+}
+
+model JobPosting {
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title            String
+  slug             String       @unique
+  categoryId       String?
+  category         JobCategory? @relation(fields: [categoryId], references: [id])
+  professionalArea String?
+
+  modalidad  JobModalidad
+  jornada    JobJornada
+  department String?
+  city       String?
+  country    String?
+
+  salaryMin     Decimal? @db.Decimal(10, 2)
+  salaryMax     Decimal? @db.Decimal(10, 2)
+  salaryVisible Boolean  @default(false)
+
+  description      String  @db.Text
+  responsibilities String? @db.Text
+  requirements     String? @db.Text
+  benefits         String? @db.Text
+
+  vacancies Int       @default(1)
+  deadline  DateTime?
+
+  experienceLevel    ExperienceLevel?
+  academicLevel      AcademicLevel?
+  requiresLicense    Boolean          @default(false)
+  requiresOwnVehicle Boolean          @default(false)
+  travelAvailability Boolean          @default(false)
+  keywords           String[]
+
+  status          JobStatus @default(BORRADOR)
+  rejectionReason String?
+  isFeatured      Boolean   @default(false)
+  viewsCount      Int       @default(0)
+
+  createdById  String
+  createdBy    User    @relation("JobCreatedBy", fields: [createdById], references: [id])
+  approvedById String?
+  approvedBy   User?   @relation("JobApprovedBy", fields: [approvedById], references: [id])
+
+  publishedAt DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  requiredLanguages JobRequiredLanguage[]
+  applications      Application[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([categoryId])
+}
+
+model JobRequiredLanguage {
+  id           String        @id @default(cuid())
+  jobPostingId String
+  jobPosting   JobPosting    @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+  language     String
+  level        LanguageLevel
+
+  @@index([jobPostingId])
+}
+
+// ========================= APPLICATION =========================
+
+model Application {
+  id           String     @id @default(cuid())
+  jobPostingId String
+  jobPosting   JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+  candidateId  String
+  candidate    Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  cvId         String
+  cv           CV         @relation(fields: [cvId], references: [id])
+
+  coverLetter String?           @db.Text
+  status      ApplicationStatus @default(RECIBIDA)
+
+  appliedAt       DateTime  @default(now())
+  viewedAt        DateTime?
+  statusUpdatedAt DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  notes ApplicationNote[]
+
+  @@unique([jobPostingId, candidateId])
+  @@index([status])
+  @@index([candidateId])
+}
+
+model ApplicationNote {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User        @relation(fields: [authorId], references: [id])
+  note          String      @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@index([applicationId])
+}
+
+// ========================= NOTIFICATION =========================
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  message   String
+  metadata  Json?
+  isRead    Boolean             @default(false)
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ========================= AUDIT LOG =========================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}
