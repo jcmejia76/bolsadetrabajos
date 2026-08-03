@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bolsa_trabajos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bolsa
+      POSTGRES_PASSWORD: bolsa_dev_password
+      POSTGRES_DB: bolsa_trabajos
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
