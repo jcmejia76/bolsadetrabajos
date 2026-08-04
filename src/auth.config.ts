@@ -12,11 +12,13 @@ export const authConfig: NextAuthConfig = {
     jwt({ token, user }) {
       if (user) {
         const authorizedUser = user as {
+          name?: string | null;
           role: Role;
           companyId?: string;
           companyStatus?: CompanyStatus;
           candidateId?: string;
         };
+        token.name = authorizedUser.name;
         token.role = authorizedUser.role;
         token.companyId = authorizedUser.companyId;
         token.companyStatus = authorizedUser.companyStatus;
@@ -26,6 +28,7 @@ export const authConfig: NextAuthConfig = {
     },
     session({ session, token }) {
       session.user.id = token.sub!;
+      session.user.name = token.name;
       session.user.role = token.role;
       session.user.companyId = token.companyId;
       session.user.companyStatus = token.companyStatus;

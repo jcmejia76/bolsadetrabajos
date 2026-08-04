@@ -110,6 +110,9 @@ enum NotificationType {
   CV_CAMBIOS_SOLICITADOS
   NUEVA_POSTULACION
   ESTADO_POSTULACION_CAMBIADO
+  STAFF_INVITADO
+  STAFF_PERMISOS_ACTUALIZADOS
+  STAFF_SUSPENDIDO
   GENERICA
 }
 
@@ -119,6 +122,83 @@ enum NotificationChannel {
   PUSH
   SMS
   WHATSAPP
+}
+
+// ========================= STAFF / RBAC =========================
+
+enum StaffScope {
+  SISTEMA
+  EMPRESA
+}
+
+enum StaffStatus {
+  INVITADO
+  ACTIVO
+  SUSPENDIDO
+  ELIMINADO
+}
+
+enum Permission {
+  // ----- Ámbito SISTEMA -----
+  SISTEMA_EMPRESAS_VER
+  SISTEMA_EMPRESAS_CREAR
+  SISTEMA_EMPRESAS_EDITAR
+  SISTEMA_EMPRESAS_APROBAR
+  SISTEMA_EMPRESAS_SUSPENDER
+  SISTEMA_EMPRESAS_ELIMINAR
+
+  SISTEMA_VACANTES_VER
+  SISTEMA_VACANTES_APROBAR
+  SISTEMA_VACANTES_RECHAZAR
+  SISTEMA_VACANTES_EDITAR
+  SISTEMA_VACANTES_DESTACAR
+  SISTEMA_VACANTES_ELIMINAR
+
+  SISTEMA_CANDIDATOS_VER
+  SISTEMA_CANDIDATOS_APROBAR_CV
+  SISTEMA_CANDIDATOS_SUSPENDER
+  SISTEMA_CANDIDATOS_ELIMINAR
+
+  SISTEMA_POSTULACIONES_VER
+  SISTEMA_POSTULACIONES_GESTIONAR
+  SISTEMA_POSTULACIONES_EXPORTAR
+
+  SISTEMA_DASHBOARD_SOLO_LECTURA
+  SISTEMA_DASHBOARD_COMPLETO
+
+  SISTEMA_CONFIGURACION_VER
+  SISTEMA_CONFIGURACION_EDITAR
+
+  SISTEMA_REPORTES_VER
+  SISTEMA_REPORTES_EXPORTAR
+
+  SISTEMA_EQUIPO_VER
+  SISTEMA_EQUIPO_CREAR
+  SISTEMA_EQUIPO_EDITAR
+  SISTEMA_EQUIPO_SUSPENDER
+  SISTEMA_EQUIPO_ELIMINAR
+
+  // ----- Ámbito EMPRESA -----
+  EMPRESA_OFERTAS_VER
+  EMPRESA_OFERTAS_CREAR
+  EMPRESA_OFERTAS_EDITAR
+  EMPRESA_OFERTAS_PUBLICAR
+  EMPRESA_OFERTAS_PAUSAR
+  EMPRESA_OFERTAS_ELIMINAR
+
+  EMPRESA_POSTULACIONES_VER
+  EMPRESA_POSTULACIONES_REVISAR
+  EMPRESA_POSTULACIONES_CAMBIAR_ESTADO
+  EMPRESA_POSTULACIONES_DESCARGAR_CV
+  EMPRESA_POSTULACIONES_AGREGAR_NOTAS
+
+  EMPRESA_PERFIL_EDITAR
+
+  EMPRESA_EQUIPO_INVITAR
+  EMPRESA_EQUIPO_EDITAR_PERMISOS
+  EMPRESA_EQUIPO_ELIMINAR
+
+  EMPRESA_ESTADISTICAS_VER
 }
 
 // ========================= IDENTITY =========================
@@ -143,6 +223,8 @@ model User {
   reviewedCVs         CV[]              @relation("CVReviewedBy")
   applicationNotes    ApplicationNote[]
   updatedSiteSettings SiteSettings[]    @relation("SiteSettingsUpdatedBy")
+  staffAccount        StaffMember?      @relation("StaffAccount")
+  invitedStaff        StaffMember[]     @relation("StaffInvitedBy")
 
   @@index([role])
 }
@@ -180,7 +262,9 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  jobPostings JobPosting[]
+  jobPostings  JobPosting[]
+  staffMembers StaffMember[] @relation("CompanyStaff")
+  staffRoles   StaffRole[]
 
   @@index([status])
 }
@@ -200,15 +284,15 @@ model Candidate {
   birthDate        DateTime?
   gender           String?
   nationality      String?
-  aboutMe          String?  @db.Text
+  aboutMe          String?   @db.Text
   profession       String?
   availability     String?
-  salaryAspiration Decimal? @db.Decimal(10, 2)
+  salaryAspiration Decimal?  @db.Decimal(10, 2)
   portfolioUrl     String?
   socialLinks      Json?
   references       Json?
   skills           String[]
-  isProfilePublic  Boolean  @default(true)
+  isProfilePublic  Boolean   @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -277,9 +361,9 @@ model CandidateLanguage {
 // ========================= CV =========================
 
 model CV {
-  id            String       @id @default(cuid())
-  candidateId   String
-  candidate     Candidate    @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
   fileName      String
   fileUrl       String
@@ -467,4 +551,64 @@ model SiteSettings {
   updatedById        String?
   updatedBy          User?    @relation("SiteSettingsUpdatedBy", fields: [updatedById], references: [id])
   updatedAt          DateTime @updatedAt
+}
+
+// ========================= STAFF / RBAC =========================
+
+model StaffRole {
+  id              String     @id @default(cuid())
+  scope           StaffScope
+  companyId       String?
+  company         Company?   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  isSystemDefault Boolean    @default(false)
+
+  permissions StaffRolePermission[]
+  members     StaffMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([scope, companyId, name])
+  @@index([scope, companyId])
+}
+
+model StaffRolePermission {
+  id         String     @id @default(cuid())
+  roleId     String
+  role       StaffRole  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission
+
+  @@unique([roleId, permission])
+}
+
+model StaffMember {
+  id     String     @id @default(cuid())
+  userId String     @unique
+  user   User       @relation("StaffAccount", fields: [userId], references: [id], onDelete: Cascade)
+  scope  StaffScope
+
+  companyId String?
+  company   Company? @relation("CompanyStaff", fields: [companyId], references: [id], onDelete: Cascade)
+
+  roleId String
+  role   StaffRole @relation(fields: [roleId], references: [id])
+
+  status   StaffStatus @default(INVITADO)
+  jobTitle String?
+
+  invitedById         String
+  invitedBy           User      @relation("StaffInvitedBy", fields: [invitedById], references: [id])
+  invitationToken     String?   @unique
+  invitationExpiresAt DateTime?
+  acceptedAt          DateTime?
+
+  lastLoginAt DateTime?
+  suspendedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scope, companyId])
 }
