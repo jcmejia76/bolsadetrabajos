@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreVertical } from "lucide-react";
+import { FileTextIcon, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,36 +56,39 @@ export function CvsAdminTable({ cvs }: { cvs: CvRow[] }) {
 
   if (cvs.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-        No hay CVs en este filtro.
-      </div>
+      <EmptyState
+        icon={<FileTextIcon />}
+        title="No hay CVs en este filtro"
+        description="Prueba con otro estado o vuelve más tarde."
+      />
     );
   }
 
   return (
     <>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Candidato</TableHead>
-            <TableHead>Archivo</TableHead>
-            <TableHead>Origen</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="px-4 py-3">Candidato</TableHead>
+            <TableHead className="px-4 py-3">Archivo</TableHead>
+            <TableHead className="px-4 py-3">Origen</TableHead>
+            <TableHead className="px-4 py-3">Estado</TableHead>
+            <TableHead className="px-4 py-3 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {cvs.map((cv) => (
             <TableRow key={cv.id}>
-              <TableCell className="font-medium">
+              <TableCell className="px-4 py-3 font-medium text-foreground">
                 {cv.candidate.firstName} {cv.candidate.lastName}
               </TableCell>
-              <TableCell>{cv.fileName}</TableCell>
-              <TableCell className="text-muted-foreground">{CV_SOURCE_LABELS[cv.sourceType]}</TableCell>
-              <TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{cv.fileName}</TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{CV_SOURCE_LABELS[cv.sourceType]}</TableCell>
+              <TableCell className="px-4 py-3">
                 <Badge variant={STATUS_VARIANTS[cv.status]}>{CV_STATUS_LABELS[cv.status]}</Badge>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="px-4 py-3 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -117,6 +121,7 @@ export function CvsAdminTable({ cvs }: { cvs: CvRow[] }) {
           ))}
         </TableBody>
       </Table>
+      </div>
 
       {rejectTarget && (
         <ReasonDialog
