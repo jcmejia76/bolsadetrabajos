@@ -1,15 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { motion } from "framer-motion"
 import {
-  Briefcase,
-  Building2,
-  CheckCircle2,
   MapPinIcon,
   SearchIcon,
-  SparklesIcon,
-  Users,
+  TagIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -22,201 +17,148 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FadeIn } from "@/components/motion/fade-in"
-import { AnimatedCounter } from "@/components/motion/animated-counter"
-import { heroStats } from "@/lib/mock/stats"
 import { mockCategories } from "@/lib/mock/categories"
-
-const STAT_ICONS = [Building2, Briefcase, Users, CheckCircle2]
 
 const POPULAR_TAGS = ["Tecnología", "Marketing", "Diseño", "Finanzas"]
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-grid-fade">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 -right-40 size-[32rem] rounded-full bg-primary/20 blur-[110px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-40 -left-32 size-96 rounded-full bg-[color:var(--chart-3)]/15 blur-[100px]"
-      />
+    <section className="relative overflow-hidden bg-background py-8 lg:py-12">
+      <HeroBackdrop />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 pt-16 pb-24 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pt-24 lg:pb-32">
-        <div className="flex flex-col gap-7">
-          <FadeIn>
-            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
-              <SparklesIcon className="size-3.5 text-primary" />
-              La forma más rápida de encontrar tu próximo empleo
-            </div>
-          </FadeIn>
+      <div className="relative mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-6">
+        <FadeIn>
+          <div className="flex flex-wrap overflow-hidden rounded-md shadow-[0_0_20px_rgba(0,0,0,0.09)] ring-1 ring-black/[0.04] dark:ring-white/[0.06]">
+            {/* Left: search panel */}
+            <div className="w-full bg-card p-6 sm:p-10 lg:w-auto lg:flex-1">
+              <h1 className="text-[28px] leading-[36px] font-normal text-balance text-foreground sm:text-[38px] sm:leading-[50px]">
+                Encuentra el trabajo ideal
+              </h1>
+              <p className="mt-2 max-w-md text-base font-light text-muted-foreground sm:text-lg">
+                Explora miles de oportunidades laborales y conecta con las
+                mejores empresas.
+              </p>
 
-          <FadeIn delay={0.05}>
-            <h1 className="text-display text-balance font-semibold text-foreground">
-              Encuentra el trabajo que{" "}
-              <span className="text-primary">impulsa tu carrera</span>
-            </h1>
-          </FadeIn>
-
-          <FadeIn delay={0.1}>
-            <p className="max-w-lg text-lg text-muted-foreground">
-              Miles de empresas confían en nosotros para encontrar talento.
-              Explora vacantes verificadas, aplica en segundos y da
-              seguimiento a cada postulación desde un solo lugar.
-            </p>
-          </FadeIn>
-
-          <FadeIn delay={0.15}>
-            <form
-              action="/empleos"
-              method="get"
-              className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-lg shadow-foreground/[0.03]"
-            >
-              <div className="relative flex items-center gap-2 rounded-xl bg-muted/60 px-3">
-                <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
-                <Input
-                  name="q"
-                  placeholder="Puesto o palabra clave"
-                  className="h-11 border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                <div className="relative flex items-center gap-2 rounded-xl bg-muted/60 px-3">
-                  <MapPinIcon className="size-4 shrink-0 text-muted-foreground" />
+              <form
+                action="/empleos"
+                method="get"
+                className="mt-7 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap"
+              >
+                <div className="flex h-14 min-w-[170px] flex-1 basis-0 items-center rounded bg-muted px-5">
+                  <Input
+                    name="q"
+                    placeholder="Puesto o palabra clave"
+                    className="h-full w-full border-none bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
+                  />
+                </div>
+                <div className="flex h-14 min-w-[170px] flex-1 basis-0 items-center gap-2 rounded bg-muted px-5">
                   <Input
                     name="location"
                     placeholder="Ubicación"
-                    className="h-11 border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
+                    className="h-full w-full border-none bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
                   />
+                  <MapPinIcon className="size-4 shrink-0 text-muted-foreground" />
                 </div>
-                <Select name="category">
-                  <SelectTrigger className="h-11 w-full justify-between rounded-xl border-none bg-muted/60 px-3 shadow-none">
-                    <SelectValue placeholder="Categoría">
-                      {(value: string) => value || "Categoría"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockCategories.map((category) => (
-                      <SelectItem key={category.slug} value={category.name}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button type="submit" size="lg" className="h-11 gap-2 px-6">
-                  <SearchIcon />
+                <div className="flex h-14 min-w-[170px] flex-1 basis-0 items-stretch rounded bg-muted px-5">
+                  <Select name="category">
+                    <SelectTrigger
+                      style={{ height: "100%" }}
+                      className="h-full w-full justify-between border-none bg-transparent p-0 text-[15px] shadow-none"
+                    >
+                      <SelectValue
+                        placeholder="Categoría"
+                        className="w-full flex-1"
+                      >
+                        {(value: string) => value || "Categoría"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockCategories.map((category) => (
+                        <SelectItem key={category.slug} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="submit"
+                  className="h-14 w-full justify-center gap-2 rounded px-7 text-base font-medium transition-transform active:scale-[0.98] sm:w-auto"
+                >
+                  <SearchIcon className="size-4" />
                   Buscar
                 </Button>
-              </div>
-            </form>
-          </FadeIn>
+              </form>
 
-          <FadeIn delay={0.2}>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Populares:</span>
+              <p className="mt-4 text-sm text-muted-foreground">
+                ¿Necesitas más opciones?{" "}
+                <Link
+                  href="/empleos"
+                  className="font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  Búsqueda avanzada
+                </Link>
+              </p>
+            </div>
+
+            {/* Right: post a job panel */}
+            <div className="flex w-full flex-col justify-center gap-3 bg-muted/70 p-6 sm:p-10 lg:w-[300px] lg:shrink-0">
+              <h2 className="text-xl font-medium text-foreground sm:text-[22px]">
+                Publica una vacante y contrata talento
+              </h2>
+              <p className="text-sm font-light leading-relaxed text-muted-foreground sm:text-base">
+                Estamos listos para ayudarte a alcanzar tus metas de
+                contratación.
+              </p>
+              <Button
+                className="w-fit gap-2 rounded bg-card px-5 text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-card/80"
+                render={<Link href="/login" />}
+                nativeButton={false}
+              >
+                Comenzar
+              </Button>
+            </div>
+
+            {/* Featured categories banner */}
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 bg-[color:var(--chart-3)] px-4 py-3">
               {POPULAR_TAGS.map((tag) => (
                 <Link
                   key={tag}
                   href={`/empleos?category=${encodeURIComponent(tag)}`}
-                  className="rounded-full border border-border px-3 py-1 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 rounded border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white transition-colors hover:bg-white/20"
                 >
+                  <TagIcon className="size-3.5" />
                   {tag}
                 </Link>
               ))}
             </div>
-          </FadeIn>
-        </div>
-
-        <div className="relative hidden lg:block">
-          <IllustrationPanel />
-        </div>
-      </div>
-
-      <div className="relative mx-auto -mt-8 max-w-7xl px-4 pb-16 sm:px-6 lg:hidden">
-        <StatRow />
+          </div>
+        </FadeIn>
       </div>
     </section>
   )
 }
 
-function StatRow() {
+function HeroBackdrop() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {heroStats.map((stat, i) => {
-        const Icon = STAT_ICONS[i]
-        return (
-          <FadeIn key={stat.label} delay={0.1 + i * 0.06}>
-            <div className="flex flex-col gap-1.5 rounded-xl border border-border bg-card p-4 shadow-sm">
-              <Icon className="size-4 text-primary" />
-              <span className="text-xl font-semibold text-foreground">
-                <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {stat.label}
-              </span>
-            </div>
-          </FadeIn>
-        )
-      })}
-    </div>
-  )
-}
-
-const FLOAT_POSITIONS = [
-  { className: "top-6 left-0", duration: 6, delay: 0 },
-  { className: "top-2 right-2", duration: 6.5, delay: 0.3 },
-  { className: "bottom-24 left-4", duration: 5.5, delay: 0.6 },
-  { className: "bottom-4 right-0", duration: 7, delay: 0.9 },
-] as const
-
-function IllustrationPanel() {
-  return (
-    <div className="relative mx-auto aspect-square max-w-md">
-      <div className="absolute inset-6 rounded-[2rem] bg-gradient-to-br from-primary/15 via-[color:var(--chart-3)]/10 to-transparent ring-1 ring-border" />
-
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 flex w-52 -translate-x-1/2 -translate-y-1/2 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-xl"
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <svg
+        className="absolute bottom-0 left-0 h-full w-full"
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 400"
+        fill="none"
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">
-          NT
-        </span>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-foreground">
-            Senior Frontend Engineer
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Nimbus Tech · Híbrido
-          </span>
-        </div>
-      </motion.div>
-
-      {heroStats.map((stat, i) => {
-        const Icon = STAT_ICONS[i]
-        const pos = FLOAT_POSITIONS[i]
-        return (
-          <motion.div
-            key={stat.label}
-            animate={{ y: [0, i % 2 === 0 ? -10 : 10, 0] }}
-            transition={{
-              duration: pos.duration,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: pos.delay,
-            }}
-            className={`absolute ${pos.className} w-40 rounded-xl border border-border bg-card p-3 shadow-xl`}
-          >
-            <Icon className="size-4 text-primary" />
-            <div className="mt-1.5 text-lg font-semibold text-foreground">
-              <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-            </div>
-            <div className="text-[11px] text-muted-foreground">
-              {stat.label}
-            </div>
-          </motion.div>
-        )
-      })}
+        <path
+          d="M0,320 C240,380 480,260 720,280 C960,300 1200,380 1440,320 L1440,400 L0,400 Z"
+          className="fill-primary/[0.12]"
+        />
+        <path
+          d="M0,350 C300,300 600,400 900,340 C1100,300 1300,360 1440,340 L1440,400 L0,400 Z"
+          className="fill-[color:var(--chart-3)]/[0.14]"
+        />
+      </svg>
+      <div className="absolute -top-24 -right-24 size-72 rounded-full bg-primary/15 blur-3xl" />
+      <div className="absolute top-10 -left-20 size-64 rounded-full bg-[color:var(--chart-3)]/15 blur-3xl" />
     </div>
   )
 }
