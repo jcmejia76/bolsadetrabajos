@@ -2,15 +2,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EmpleosLoading() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
-      <Skeleton className="h-24 w-full rounded-2xl" />
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
-        <Skeleton className="hidden h-96 rounded-2xl lg:block" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col md:flex-row">
+      <div className="flex min-h-0 flex-col gap-4 border-border p-4 sm:p-6 md:w-[45%] md:border-r lg:w-[42%]">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full rounded-xl" />
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-24 rounded-lg" />
+          <Skeleton className="h-8 w-32 rounded-lg" />
+        </div>
+        <div className="flex flex-col gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-2xl" />
+            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
           ))}
         </div>
+      </div>
+      <div className="hidden flex-1 md:block">
+        <Skeleton className="size-full rounded-none" />
       </div>
     </div>
   );
