@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { Role, CompanyStatus } from "../src/generated/prisma/enums";
+import { Role, CompanyStatus, StaffScope, Permission } from "../src/generated/prisma/enums";
 import { hashPassword } from "../src/lib/password";
 import { slugify } from "../src/lib/slug";
 
@@ -109,9 +109,124 @@ async function seedJobCategories() {
   console.log(`Categorías sembradas: ${result.count} nuevas (${categories.length} totales).`);
 }
 
+const SYSTEM_STAFF_ROLES: { name: string; description: string; permissions: Permission[] }[] = [
+  {
+    name: "Moderador",
+    description: "Aprueba y modera empresas y vacantes publicadas en la plataforma.",
+    permissions: [
+      Permission.SISTEMA_EMPRESAS_VER,
+      Permission.SISTEMA_EMPRESAS_APROBAR,
+      Permission.SISTEMA_EMPRESAS_SUSPENDER,
+      Permission.SISTEMA_VACANTES_VER,
+      Permission.SISTEMA_VACANTES_APROBAR,
+      Permission.SISTEMA_VACANTES_RECHAZAR,
+      Permission.SISTEMA_VACANTES_EDITAR,
+      Permission.SISTEMA_VACANTES_DESTACAR,
+      Permission.SISTEMA_CANDIDATOS_VER,
+      Permission.SISTEMA_DASHBOARD_SOLO_LECTURA,
+    ],
+  },
+  {
+    name: "Soporte",
+    description: "Atiende consultas de empresas y candidatos y da seguimiento a postulaciones.",
+    permissions: [
+      Permission.SISTEMA_EMPRESAS_VER,
+      Permission.SISTEMA_CANDIDATOS_VER,
+      Permission.SISTEMA_POSTULACIONES_VER,
+      Permission.SISTEMA_POSTULACIONES_GESTIONAR,
+      Permission.SISTEMA_DASHBOARD_SOLO_LECTURA,
+    ],
+  },
+  {
+    name: "Auditor",
+    description: "Acceso de solo lectura a toda la plataforma para fines de auditoría.",
+    permissions: [
+      Permission.SISTEMA_DASHBOARD_SOLO_LECTURA,
+      Permission.SISTEMA_REPORTES_VER,
+      Permission.SISTEMA_REPORTES_EXPORTAR,
+      Permission.SISTEMA_EMPRESAS_VER,
+      Permission.SISTEMA_VACANTES_VER,
+      Permission.SISTEMA_CANDIDATOS_VER,
+      Permission.SISTEMA_POSTULACIONES_VER,
+    ],
+  },
+  {
+    name: "RRHH",
+    description: "Revisa y aprueba CVs y da seguimiento a postulaciones.",
+    permissions: [
+      Permission.SISTEMA_CANDIDATOS_VER,
+      Permission.SISTEMA_CANDIDATOS_APROBAR_CV,
+      Permission.SISTEMA_POSTULACIONES_VER,
+      Permission.SISTEMA_POSTULACIONES_GESTIONAR,
+      Permission.SISTEMA_DASHBOARD_SOLO_LECTURA,
+    ],
+  },
+  {
+    name: "Analista",
+    description: "Analiza métricas y reportes de la plataforma.",
+    permissions: [
+      Permission.SISTEMA_DASHBOARD_COMPLETO,
+      Permission.SISTEMA_REPORTES_VER,
+      Permission.SISTEMA_REPORTES_EXPORTAR,
+      Permission.SISTEMA_EMPRESAS_VER,
+      Permission.SISTEMA_VACANTES_VER,
+      Permission.SISTEMA_CANDIDATOS_VER,
+    ],
+  },
+  {
+    name: "Supervisor",
+    description: "Acceso operativo amplio sobre empresas, vacantes, candidatos y postulaciones.",
+    permissions: [
+      Permission.SISTEMA_EMPRESAS_VER,
+      Permission.SISTEMA_EMPRESAS_EDITAR,
+      Permission.SISTEMA_EMPRESAS_APROBAR,
+      Permission.SISTEMA_EMPRESAS_SUSPENDER,
+      Permission.SISTEMA_VACANTES_VER,
+      Permission.SISTEMA_VACANTES_APROBAR,
+      Permission.SISTEMA_VACANTES_RECHAZAR,
+      Permission.SISTEMA_VACANTES_EDITAR,
+      Permission.SISTEMA_VACANTES_DESTACAR,
+      Permission.SISTEMA_VACANTES_ELIMINAR,
+      Permission.SISTEMA_CANDIDATOS_VER,
+      Permission.SISTEMA_CANDIDATOS_APROBAR_CV,
+      Permission.SISTEMA_CANDIDATOS_SUSPENDER,
+      Permission.SISTEMA_POSTULACIONES_VER,
+      Permission.SISTEMA_POSTULACIONES_GESTIONAR,
+      Permission.SISTEMA_POSTULACIONES_EXPORTAR,
+      Permission.SISTEMA_DASHBOARD_COMPLETO,
+      Permission.SISTEMA_EQUIPO_VER,
+    ],
+  },
+];
+
+async function seedSystemStaffRoles() {
+  let created = 0;
+  for (const roleDef of SYSTEM_STAFF_ROLES) {
+    const existing = await prisma.staffRole.findFirst({
+      where: { scope: StaffScope.SISTEMA, companyId: null, name: roleDef.name },
+    });
+    if (existing) continue;
+
+    await prisma.staffRole.create({
+      data: {
+        scope: StaffScope.SISTEMA,
+        name: roleDef.name,
+        description: roleDef.description,
+        isSystemDefault: true,
+        permissions: {
+          create: roleDef.permissions.map((permission) => ({ permission })),
+        },
+      },
+    });
+    created += 1;
+  }
+  console.log(`Roles de staff del sistema sembrados: ${created} nuevos (${SYSTEM_STAFF_ROLES.length} totales).`);
+}
+
 async function main() {
   await seedAdmin();
   await seedJobCategories();
+  await seedSystemStaffRoles();
 
   if (process.argv.includes("--with-test-users")) {
     await seedTestUsers();

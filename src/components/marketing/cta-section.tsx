@@ -8,7 +8,7 @@ function CtaSection() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <Reveal>
-        <div className="relative overflow-hidden rounded-[2rem] bg-primary px-8 py-16 text-center sm:px-16">
+        <div className="relative overflow-hidden rounded-[0.25rem] bg-primary px-8 py-16 text-center sm:px-16">
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full bg-white/10 blur-3xl"

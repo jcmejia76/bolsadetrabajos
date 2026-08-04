@@ -7,11 +7,13 @@ import {
   BriefcaseBusinessIcon,
   ChevronDownIcon,
   LockIcon,
+  LogOutIcon,
   UserPlusIcon,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { signOutAction } from "@/lib/actions/sign-out"
 import {
   Sheet,
   SheetTrigger,
@@ -30,6 +32,13 @@ import {
 interface NavChild {
   label: string
   href: string
+}
+
+interface NavbarUser {
+  name?: string | null
+  email?: string | null
+  roleLabel: string
+  quickLinks: NavChild[]
 }
 
 interface NavItem {
@@ -112,7 +121,7 @@ function isItemActive(pathname: string, href?: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function NavDropdownItem({ item, pathname }: { item: NavItem; pathname: string }) {
+function useHoverDropdown() {
   const [open, setOpen] = useState(false)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -131,6 +140,11 @@ function NavDropdownItem({ item, pathname }: { item: NavItem; pathname: string }
     }
   }, [])
 
+  return { open, handleEnter, handleLeave }
+}
+
+function NavDropdownItem({ item, pathname }: { item: NavItem; pathname: string }) {
+  const { open, handleEnter, handleLeave } = useHoverDropdown()
   const active = isItemActive(pathname, item.href)
   const triggerClassName = cn(
     "flex items-center gap-1 rounded-md px-[11px] py-[7px] text-sm font-normal text-foreground/70 transition-colors duration-150 hover:text-primary",
@@ -180,6 +194,70 @@ function NavDropdownItem({ item, pathname }: { item: NavItem; pathname: string }
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function UserMenu({ user }: { user: NavbarUser }) {
+  const { open, handleEnter, handleLeave } = useHoverDropdown()
+  const displayName = user.name ?? user.email ?? "Cuenta"
+  const initial = displayName.charAt(0).toUpperCase()
+
+  return (
+    <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <button
+        type="button"
+        className={cn(
+          "flex items-center gap-2 rounded-md px-[11px] py-[7px] text-sm font-normal text-foreground/70 transition-colors duration-150 hover:text-primary",
+          open && "text-primary"
+        )}
+      >
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+          {initial}
+        </span>
+        <span className="max-w-[160px] truncate">{displayName}</span>
+        <ChevronDownIcon
+          className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180")}
+        />
+      </button>
+
+      <div
+        className={cn(
+          "absolute top-full right-0 z-50 min-w-[240px] origin-top-right rounded-[4px] bg-[#2c2c2e] py-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.18)] transition-all duration-[250ms] ease-out",
+          open
+            ? "visible translate-y-0 opacity-100"
+            : "pointer-events-none invisible -translate-y-1 opacity-0"
+        )}
+      >
+        <div className="border-b border-white/10 px-[15px] pb-2.5">
+          <p className="truncate text-sm font-medium text-white">{displayName}</p>
+          {user.email && user.email !== displayName && (
+            <p className="truncate text-xs text-neutral-400">{user.email}</p>
+          )}
+          <p className="text-xs text-neutral-400">{user.roleLabel}</p>
+        </div>
+        <div className="py-1.5">
+          {user.quickLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block px-[15px] py-[6px] text-sm text-neutral-400 transition-colors duration-150 hover:text-white"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+        <div className="border-t border-white/10 pt-1.5">
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className="block w-full px-[15px] py-[6px] text-left text-sm text-neutral-400 transition-colors duration-150 hover:text-white"
+            >
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }
@@ -263,7 +341,7 @@ function MobileNavItem({ item, pathname }: { item: NavItem; pathname: string }) 
   )
 }
 
-function Navbar() {
+function Navbar({ user }: { user: NavbarUser | null }) {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -294,20 +372,26 @@ function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-4 lg:flex">
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-          >
-            <LockIcon className="size-3.5" />
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-          >
-            <UserPlusIcon className="size-3.5" />
-            Registrarse
-          </Link>
+          {user ? (
+            <UserMenu user={user} />
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                <LockIcon className="size-3.5" />
+                Iniciar sesión
+              </Link>
+              <Link
+                href="/registro"
+                className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+              >
+                <UserPlusIcon className="size-3.5" />
+                Registrarse
+              </Link>
+            </>
+          )}
         </div>
 
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -335,14 +419,49 @@ function Navbar() {
               ))}
             </Accordion>
             <div className="mt-auto flex flex-col gap-2 border-t border-border pt-4">
-              <Button variant="outline" render={<Link href="/login" />} nativeButton={false}>
-                <LockIcon className="size-4" />
-                Iniciar sesión
-              </Button>
-              <Button render={<Link href="/login" />} nativeButton={false}>
-                <UserPlusIcon className="size-4" />
-                Registrarse
-              </Button>
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2.5 px-3 pb-1">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                      {(user.name ?? user.email ?? "?").charAt(0).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {user.name ?? user.email}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{user.roleLabel}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {user.quickLinks.map((link) => (
+                      <SheetClose
+                        key={link.href}
+                        render={<Link href={link.href} />}
+                        className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      >
+                        {link.label}
+                      </SheetClose>
+                    ))}
+                  </div>
+                  <form action={signOutAction} className="pt-1">
+                    <Button type="submit" variant="outline" className="w-full">
+                      <LogOutIcon className="size-4" />
+                      Cerrar sesión
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" render={<Link href="/login" />} nativeButton={false}>
+                    <LockIcon className="size-4" />
+                    Iniciar sesión
+                  </Button>
+                  <Button render={<Link href="/registro" />} nativeButton={false}>
+                    <UserPlusIcon className="size-4" />
+                    Registrarse
+                  </Button>
+                </>
+              )}
             </div>
           </SheetContent>
         </Sheet>
