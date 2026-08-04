@@ -271,7 +271,7 @@ function JobsListingClient({
   }, [])
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] flex-col">
+    <div className="flex h-[calc(100dvh-82px)] flex-col">
       <div className="border-b border-border md:hidden">
         <Tabs value={mobileView} onValueChange={(v) => setMobileView(v as "lista" | "mapa")}>
           <TabsList className="w-full rounded-none bg-transparent p-2">
