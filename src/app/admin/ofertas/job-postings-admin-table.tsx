@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical } from "lucide-react";
+import { BriefcaseIcon, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,36 +67,39 @@ export function JobPostingsAdminTable({ jobPostings }: { jobPostings: JobRow[] }
 
   if (jobPostings.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-        No hay ofertas en este filtro.
-      </div>
+      <EmptyState
+        icon={<BriefcaseIcon />}
+        title="No hay ofertas en este filtro"
+        description="Prueba con otro estado o vuelve más tarde."
+      />
     );
   }
 
   return (
     <>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Empresa</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Destacada</TableHead>
-            <TableHead>Postulantes</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="px-4 py-3">Título</TableHead>
+            <TableHead className="px-4 py-3">Empresa</TableHead>
+            <TableHead className="px-4 py-3">Estado</TableHead>
+            <TableHead className="px-4 py-3">Destacada</TableHead>
+            <TableHead className="px-4 py-3">Postulantes</TableHead>
+            <TableHead className="px-4 py-3 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {jobPostings.map((job) => (
             <TableRow key={job.id}>
-              <TableCell className="font-medium">{job.title}</TableCell>
-              <TableCell className="text-muted-foreground">{job.company.name}</TableCell>
-              <TableCell>
+              <TableCell className="px-4 py-3 font-medium text-foreground">{job.title}</TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{job.company.name}</TableCell>
+              <TableCell className="px-4 py-3">
                 <Badge variant={JOB_STATUS_VARIANTS[job.status]}>{JOB_STATUS_LABELS[job.status]}</Badge>
               </TableCell>
-              <TableCell>{job.isFeatured ? <Badge>Destacada</Badge> : "—"}</TableCell>
-              <TableCell>{job._count.applications}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="px-4 py-3">{job.isFeatured ? <Badge>Destacada</Badge> : "—"}</TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{job._count.applications}</TableCell>
+              <TableCell className="px-4 py-3 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -137,6 +141,7 @@ export function JobPostingsAdminTable({ jobPostings }: { jobPostings: JobRow[] }
           ))}
         </TableBody>
       </Table>
+      </div>
 
       {rejectTarget && (
         <ReasonDialog

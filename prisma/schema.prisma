@@ -142,6 +142,7 @@ model User {
   approvedJobPostings JobPosting[]      @relation("JobApprovedBy")
   reviewedCVs         CV[]              @relation("CVReviewedBy")
   applicationNotes    ApplicationNote[]
+  updatedSiteSettings SiteSettings[]    @relation("SiteSettingsUpdatedBy")
 
   @@index([role])
 }
@@ -455,4 +456,15 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId])
+}
+
+// ========================= SITE SETTINGS =========================
+
+model SiteSettings {
+  id                 String   @id @default(cuid())
+  maintenanceMode    Boolean  @default(false)
+  maintenanceMessage String?  @db.Text
+  updatedById        String?
+  updatedBy          User?    @relation("SiteSettingsUpdatedBy", fields: [updatedById], references: [id])
+  updatedAt          DateTime @updatedAt
 }

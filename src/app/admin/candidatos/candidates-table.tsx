@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, UsersIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,40 +58,43 @@ export function CandidatesTable({ candidates }: { candidates: CandidateRow[] }) 
 
   if (candidates.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-        No hay candidatos registrados.
-      </div>
+      <EmptyState
+        icon={<UsersIcon />}
+        title="No hay candidatos registrados"
+        description="Los nuevos registros aparecerán aquí."
+      />
     );
   }
 
   return (
     <>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Correo</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>CVs</TableHead>
-            <TableHead>Postulaciones</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="px-4 py-3">Nombre</TableHead>
+            <TableHead className="px-4 py-3">Correo</TableHead>
+            <TableHead className="px-4 py-3">Estado</TableHead>
+            <TableHead className="px-4 py-3">CVs</TableHead>
+            <TableHead className="px-4 py-3">Postulaciones</TableHead>
+            <TableHead className="px-4 py-3 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {candidates.map((candidate) => (
             <TableRow key={candidate.id}>
-              <TableCell className="font-medium">
+              <TableCell className="px-4 py-3 font-medium text-foreground">
                 {candidate.firstName} {candidate.lastName}
               </TableCell>
-              <TableCell className="text-muted-foreground">{candidate.user.email}</TableCell>
-              <TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{candidate.user.email}</TableCell>
+              <TableCell className="px-4 py-3">
                 <Badge variant={candidate.user.isActive ? "default" : "destructive"}>
                   {candidate.user.isActive ? "Activo" : "Suspendido"}
                 </Badge>
               </TableCell>
-              <TableCell>{candidate._count.cvs}</TableCell>
-              <TableCell>{candidate._count.applications}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="px-4 py-3 text-muted-foreground">{candidate._count.cvs}</TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{candidate._count.applications}</TableCell>
+              <TableCell className="px-4 py-3 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -119,6 +123,7 @@ export function CandidatesTable({ candidates }: { candidates: CandidateRow[] }) 
           ))}
         </TableBody>
       </Table>
+      </div>
 
       {deleteTarget && (
         <DeleteCandidateDialog
