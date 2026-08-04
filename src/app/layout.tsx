@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { MotionProvider } from "@/components/motion/motion-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -32,8 +33,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster />
+          <MotionProvider>
+            {children}
+            <Toaster />
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>
