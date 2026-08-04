@@ -49,3 +49,6 @@ next-env.d.ts
 /prisma/migrations/**/migration_lock.toml.bak
 
 /src/generated/prisma
+
+# Claude Code local runtime state
+/.claude/
