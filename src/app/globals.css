@@ -157,3 +157,101 @@
       40px 40px;
   }
 }
+
+/* ===== Job search map (Leaflet custom markers, clusters, popups) ===== */
+
+.job-marker-wrapper,
+.job-cluster-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.job-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--primary);
+  box-shadow:
+    0 2px 8px rgb(0 0 0 / 0.25),
+    0 0 0 2px var(--background);
+  transition:
+    transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.18s ease;
+  cursor: pointer;
+}
+
+.job-marker__icon {
+  transform: rotate(45deg);
+  color: var(--primary-foreground);
+}
+
+.job-marker--hovered {
+  transform: rotate(-45deg) scale(1.18);
+  box-shadow:
+    0 4px 14px rgb(0 0 0 / 0.3),
+    0 0 0 3px var(--background);
+  z-index: 1000 !important;
+}
+
+.job-marker--selected {
+  background: var(--foreground);
+  transform: rotate(-45deg) scale(1.3);
+  box-shadow:
+    0 6px 18px rgb(0 0 0 / 0.35),
+    0 0 0 3px var(--primary);
+  z-index: 1000 !important;
+}
+
+.job-marker--selected .job-marker__icon {
+  color: var(--background);
+}
+
+.job-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow:
+    0 2px 10px rgb(0 0 0 / 0.25),
+    0 0 0 4px color-mix(in oklch, var(--primary) 25%, transparent);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leaflet-marker-icon.job-cluster-wrapper:hover .job-cluster {
+  transform: scale(1.08);
+}
+
+.job-map-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 0.18),
+    0 0 0 1px var(--border);
+}
+
+.job-map-popup .leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+
+.job-map-popup .leaflet-popup-tip {
+  background: var(--card);
+  box-shadow: none;
+}
+
+.job-map-popup .leaflet-popup-close-button {
+  top: 8px !important;
+  right: 8px !important;
+  color: var(--muted-foreground) !important;
+}
