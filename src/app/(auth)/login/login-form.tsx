@@ -37,9 +37,9 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm shadow-sm">
       <CardHeader>
-        <CardTitle>Iniciar sesión</CardTitle>
+        <CardTitle className="text-xl">Iniciar sesión</CardTitle>
         <CardDescription>Accede a tu cuenta de Bolsa de Trabajos</CardDescription>
       </CardHeader>
       <CardContent>
