@@ -8,7 +8,7 @@ import {
   SettingsIcon,
 } from "lucide-react";
 
-import { requireRole } from "@/lib/auth-utils";
+import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
 
@@ -24,6 +24,7 @@ const NAV_ITEMS: DashboardNavItem[] = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole(Role.ADMINISTRADOR);
+  await enforceStaffActiveOrRedirect(session.user.id);
 
   return (
     <SidebarShell
