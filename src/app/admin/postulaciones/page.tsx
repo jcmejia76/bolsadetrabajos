@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SendIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,10 +10,21 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import { APPLICATION_STATUS_LABELS } from "@/lib/application-labels";
 import { listApplicationsForAdmin } from "@/services/admin/application-review.service";
 import { ApplicationsFilterBar } from "./applications-filter-bar";
+
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  [ApplicationStatus.RECIBIDA]: "outline",
+  [ApplicationStatus.EN_REVISION]: "secondary",
+  [ApplicationStatus.VISTA]: "secondary",
+  [ApplicationStatus.PRESELECCIONADO]: "secondary",
+  [ApplicationStatus.ENTREVISTA]: "secondary",
+  [ApplicationStatus.RECHAZADO]: "destructive",
+  [ApplicationStatus.CONTRATADO]: "default",
+};
 
 export default async function AdminPostulacionesPage({
   searchParams,
@@ -32,45 +44,56 @@ export default async function AdminPostulacionesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Postulaciones ({total})</h2>
-        <ApplicationsFilterBar />
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Postulaciones ({total})
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Consulta todas las postulaciones recibidas en la plataforma.
+        </p>
       </div>
 
+      <ApplicationsFilterBar />
+
       {applications.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-          No hay postulaciones en este filtro.
-        </div>
+        <EmptyState
+          icon={<SendIcon />}
+          title="No hay postulaciones en este filtro"
+          description="Prueba con otro estado o vuelve más tarde."
+        />
       ) : (
         <>
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Candidato</TableHead>
-                <TableHead>Oferta</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Postulado el</TableHead>
-                <TableHead className="text-right">CV</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-4 py-3">Candidato</TableHead>
+                <TableHead className="px-4 py-3">Oferta</TableHead>
+                <TableHead className="px-4 py-3">Empresa</TableHead>
+                <TableHead className="px-4 py-3">Estado</TableHead>
+                <TableHead className="px-4 py-3">Postulado el</TableHead>
+                <TableHead className="px-4 py-3 text-right">CV</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {applications.map((application) => (
                 <TableRow key={application.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="px-4 py-3 font-medium text-foreground">
                     {application.candidate.firstName} {application.candidate.lastName}
                   </TableCell>
-                  <TableCell>{application.jobPosting.title}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="px-4 py-3">{application.jobPosting.title}</TableCell>
+                  <TableCell className="px-4 py-3 text-muted-foreground">
                     {application.jobPosting.company.name}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{APPLICATION_STATUS_LABELS[application.status]}</Badge>
+                  <TableCell className="px-4 py-3">
+                    <Badge variant={STATUS_VARIANTS[application.status]}>
+                      {APPLICATION_STATUS_LABELS[application.status]}
+                    </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="px-4 py-3 text-muted-foreground">
                     {new Date(application.appliedAt).toLocaleDateString("es")}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="px-4 py-3 text-right">
                     <a
                       href={application.cv.fileUrl}
                       target="_blank"
@@ -84,6 +107,7 @@ export default async function AdminPostulacionesPage({
               ))}
             </TableBody>
           </Table>
+          </div>
 
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">

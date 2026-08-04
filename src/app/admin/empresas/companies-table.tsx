@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical } from "lucide-react";
+import { Building2Icon, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   Table,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,36 +52,39 @@ export function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
 
   if (companies.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-        No hay empresas en este filtro.
-      </div>
+      <EmptyState
+        icon={<Building2Icon />}
+        title="No hay empresas en este filtro"
+        description="Prueba con otro estado o vuelve más tarde."
+      />
     );
   }
 
   return (
     <>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Industria</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Ofertas</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="px-4 py-3">Nombre</TableHead>
+            <TableHead className="px-4 py-3">Industria</TableHead>
+            <TableHead className="px-4 py-3">Estado</TableHead>
+            <TableHead className="px-4 py-3">Ofertas</TableHead>
+            <TableHead className="px-4 py-3 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {companies.map((company) => (
             <TableRow key={company.id}>
-              <TableCell className="font-medium">{company.name}</TableCell>
-              <TableCell className="text-muted-foreground">{company.industry ?? "—"}</TableCell>
-              <TableCell>
+              <TableCell className="px-4 py-3 font-medium text-foreground">{company.name}</TableCell>
+              <TableCell className="px-4 py-3 text-muted-foreground">{company.industry ?? "—"}</TableCell>
+              <TableCell className="px-4 py-3">
                 <Badge variant={COMPANY_STATUS_VARIANTS[company.status]}>
                   {COMPANY_STATUS_LABELS[company.status]}
                 </Badge>
               </TableCell>
-              <TableCell>{company._count.jobPostings}</TableCell>
-              <TableCell className="text-right">
+              <TableCell className="px-4 py-3 text-muted-foreground">{company._count.jobPostings}</TableCell>
+              <TableCell className="px-4 py-3 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
@@ -127,6 +131,7 @@ export function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
           ))}
         </TableBody>
       </Table>
+      </div>
 
       {rejectTarget && (
         <ReasonDialog
