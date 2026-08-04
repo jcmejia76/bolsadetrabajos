@@ -3,6 +3,8 @@ import { LayoutDashboardIcon, BriefcaseIcon } from "lucide-react";
 import { requireRole } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
+import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen";
+import { getMaintenanceState } from "@/services/settings/site-settings.service";
 
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/empresa", label: "Panel", icon: <LayoutDashboardIcon className="size-4" />, exact: true },
@@ -11,6 +13,9 @@ const NAV_ITEMS: DashboardNavItem[] = [
 
 export default async function EmpresaLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole(Role.EMPRESA);
+
+  const { maintenanceMode, maintenanceMessage } = await getMaintenanceState();
+  if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />;
 
   return (
     <SidebarShell
