@@ -67,7 +67,7 @@ function JobMapPanel({
   }, [onClearAreaSearch])
 
   return (
-    <div className={cn("relative size-full overflow-hidden", className)}>
+    <div className={cn("isolate relative size-full overflow-hidden", className)}>
       <LeafletMap
         jobs={jobs}
         hoveredJobId={hoveredJobId}
