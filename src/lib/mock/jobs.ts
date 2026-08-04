@@ -1,3 +1,6 @@
+import { findGeoCity, GEO_CITIES } from "./geo"
+import { mockCompanies } from "./companies"
+
 export type JobModality = "Remoto" | "Presencial" | "Híbrido"
 export type JobSchedule = "Tiempo completo" | "Medio tiempo" | "Freelance"
 
@@ -10,6 +13,10 @@ export interface MockJob {
   companyInitials: string
   companyColor: string
   location: string
+  department?: string
+  lat?: number
+  lng?: number
+  remote: boolean
   modality: JobModality
   schedule: JobSchedule
   salaryMin: number
@@ -26,7 +33,18 @@ export interface MockJob {
   benefits: string[]
 }
 
-export const mockJobs: MockJob[] = [
+/** Attaches department/lat/lng from the GEO_CITIES lookup, or marks the job as remote. */
+function withGeo<T extends { location: string; modality: JobModality }>(
+  job: T
+): T & { department?: string; lat?: number; lng?: number; remote: boolean } {
+  if (job.modality === "Remoto") {
+    return { ...job, remote: true }
+  }
+  const geo = findGeoCity(job.location)
+  return { ...job, department: geo?.department, lat: geo?.lat, lng: geo?.lng, remote: false }
+}
+
+const curatedJobs: Omit<MockJob, "department" | "lat" | "lng" | "remote">[] = [
   {
     id: "job-1",
     slug: "senior-frontend-engineer-nimbus-tech",
@@ -388,3 +406,100 @@ export const mockJobs: MockJob[] = [
     ],
   },
 ]
+
+interface JobTemplate {
+  title: string
+  category: string
+  tags: string[]
+  salaryMin: number
+  salaryMax: number
+}
+
+const TEMPLATE_BANK: JobTemplate[] = [
+  { title: "Desarrollador/a Frontend", category: "Tecnología de la Información", tags: ["React", "CSS", "Accesibilidad"], salaryMin: 8000, salaryMax: 13000 },
+  { title: "Ingeniero/a QA Automation", category: "Tecnología de la Información", tags: ["Cypress", "CI/CD", "Testing"], salaryMin: 9000, salaryMax: 14000 },
+  { title: "Administrador/a de Bases de Datos", category: "Tecnología de la Información", tags: ["PostgreSQL", "Backups", "Tuning"], salaryMin: 10000, salaryMax: 16000 },
+  { title: "DevOps Engineer", category: "Tecnología de la Información", tags: ["AWS", "Docker", "Terraform"], salaryMin: 12000, salaryMax: 18000 },
+  { title: "Analista de Créditos", category: "Administración y Finanzas", tags: ["Riesgo", "Cobranza", "Excel"], salaryMin: 6500, salaryMax: 9500 },
+  { title: "Contador/a General", category: "Administración y Finanzas", tags: ["NIIF", "Impuestos", "Conciliaciones"], salaryMin: 7000, salaryMax: 10500 },
+  { title: "Auxiliar de Tesorería", category: "Administración y Finanzas", tags: ["Bancos", "Flujo de caja"], salaryMin: 5000, salaryMax: 7000 },
+  { title: "Gerente de Marca", category: "Marketing y Publicidad", tags: ["Branding", "Investigación de mercado"], salaryMin: 11000, salaryMax: 16000 },
+  { title: "Community Manager", category: "Marketing y Publicidad", tags: ["Redes sociales", "Copywriting"], salaryMin: 5000, salaryMax: 7500 },
+  { title: "Diseñador/a Gráfico", category: "Diseño y Multimedia", tags: ["Illustrator", "Branding"], salaryMin: 5500, salaryMax: 8500 },
+  { title: "Editor/a de Video", category: "Diseño y Multimedia", tags: ["Premiere", "Motion Graphics"], salaryMin: 6000, salaryMax: 9000 },
+  { title: "Médico/a General", category: "Salud y Medicina", tags: ["Consulta externa"], salaryMin: 9000, salaryMax: 14000 },
+  { title: "Técnico/a de Laboratorio", category: "Salud y Medicina", tags: ["Análisis clínicos"], salaryMin: 5500, salaryMax: 7500 },
+  { title: "Fisioterapeuta", category: "Salud y Medicina", tags: ["Rehabilitación"], salaryMin: 6000, salaryMax: 8500 },
+  { title: "Agente de Soporte Nivel 1", category: "Atención al Cliente", tags: ["Zendesk", "Chat en vivo"], salaryMin: 4200, salaryMax: 5500 },
+  { title: "Supervisor/a de Call Center", category: "Atención al Cliente", tags: ["Liderazgo", "KPIs"], salaryMin: 6500, salaryMax: 9000 },
+  { title: "Docente de Ciencias", category: "Educación", tags: ["Planeación didáctica"], salaryMin: 4500, salaryMax: 6500 },
+  { title: "Coordinador/a Académico", category: "Educación", tags: ["Gestión educativa"], salaryMin: 6500, salaryMax: 9500 },
+  { title: "Analista de Inventarios", category: "Logística y Cadena de Suministro", tags: ["WMS", "Kardex"], salaryMin: 5500, salaryMax: 8000 },
+  { title: "Jefe de Bodega", category: "Logística y Cadena de Suministro", tags: ["Almacenes", "Inventario"], salaryMin: 7000, salaryMax: 10000 },
+  { title: "Despachador/a de Flota", category: "Logística y Cadena de Suministro", tags: ["Rutas", "GPS"], salaryMin: 5000, salaryMax: 7000 },
+]
+
+const SCHEDULES: JobSchedule[] = ["Tiempo completo", "Medio tiempo", "Freelance"]
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+}
+
+/**
+ * Expands the curated set with deterministic, index-derived combinations so
+ * the map has enough density to demonstrate clustering. No Math.random is
+ * used so server and client renders stay identical.
+ */
+function generateJobs(count: number): MockJob[] {
+  return Array.from({ length: count }, (_, i) => {
+    const template = TEMPLATE_BANK[i % TEMPLATE_BANK.length]
+    const company = mockCompanies[i % mockCompanies.length]
+    const isRemote = i % 5 === 4
+    const city = GEO_CITIES[i % GEO_CITIES.length]
+    const modality: JobModality = isRemote ? "Remoto" : i % 3 === 0 ? "Híbrido" : "Presencial"
+    const salaryBump = (i % 5) * 500
+    const slug = `${slugify(template.title)}-${company.slug}-${i + 1}`
+
+    const base = {
+      id: `job-gen-${i + 1}`,
+      slug,
+      title: template.title,
+      companyName: company.name,
+      companySlug: company.slug,
+      companyInitials: company.initials,
+      companyColor: company.color,
+      location: isRemote ? "Remoto" : city.city,
+      modality,
+      schedule: SCHEDULES[i % SCHEDULES.length],
+      salaryMin: template.salaryMin + salaryBump,
+      salaryMax: template.salaryMax + salaryBump,
+      currency: "GTQ",
+      category: template.category,
+      tags: template.tags,
+      postedDaysAgo: (i * 3 + 1) % 21,
+      featured: i % 6 === 0,
+      applicantsCount: 5 + ((i * 7) % 60),
+      description: `${company.name} está en búsqueda de un/a ${template.title.toLowerCase()} para sumarse a su equipo en ${isRemote ? "modalidad remota" : city.city}, contribuyendo directamente a los objetivos del área de ${template.category.toLowerCase()}.`,
+      responsibilities: [
+        `Ejecutar las funciones propias del rol de ${template.title.toLowerCase()} con altos estándares de calidad.`,
+        "Colaborar de forma cercana con otros equipos para cumplir los objetivos del área.",
+        "Reportar avances y resultados de forma periódica a la jefatura correspondiente.",
+      ],
+      requirements: [
+        `Experiencia previa como ${template.title.toLowerCase()} o en un puesto similar.`,
+        "Buenas habilidades de comunicación y trabajo en equipo.",
+        "Disponibilidad según la modalidad y jornada del puesto.",
+      ],
+      benefits: ["Seguro médico", "Capacitación continua", "Ambiente colaborativo"],
+    }
+
+    return withGeo(base)
+  })
+}
+
+export const mockJobs: MockJob[] = [...curatedJobs.map(withGeo), ...generateJobs(38)]
