@@ -7,11 +7,14 @@ import { StatsCounter } from "@/components/marketing/stats-counter"
 import { Benefits } from "@/components/marketing/benefits"
 import { Testimonials } from "@/components/marketing/testimonials"
 import { CtaSection } from "@/components/marketing/cta-section"
+import { listAllCategories } from "@/services/job-posting/job-posting-public.service"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const categories = await listAllCategories()
+
   return (
     <>
-      <Hero />
+      <Hero categories={categories} />
       <PopularCategories />
       <FeaturedCompanies />
       <FeaturedJobs />

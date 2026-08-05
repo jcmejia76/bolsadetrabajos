@@ -12,12 +12,12 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
 import { JobCard } from "@/components/jobs/job-card"
-import { mockCompanies } from "@/lib/mock/companies"
-import { mockJobs } from "@/lib/mock/jobs"
+import { getPublishedCompanyBySlug } from "@/services/company/company-public.service"
+import { mapCompanyDetailToCardData } from "@/lib/company-view-model"
+import { mapJobPostingToCardData } from "@/lib/job-view-model"
 
 export async function generateMetadata({
   params,
@@ -25,7 +25,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const company = mockCompanies.find((c) => c.slug === slug)
+  const company = await getPublishedCompanyBySlug(slug)
   return { title: company ? company.name : "Empresa no encontrada" }
 }
 
@@ -37,13 +37,15 @@ export default async function CompanyProfilePage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const company = mockCompanies.find((c) => c.slug === slug)
+  const companyRecord = await getPublishedCompanyBySlug(slug)
 
-  if (!company) {
+  if (!companyRecord) {
     notFound()
   }
 
-  const openJobs = mockJobs.filter((job) => job.companySlug === company.slug)
+  const company = mapCompanyDetailToCardData(companyRecord)
+  const openJobs = companyRecord.jobPostings.map(mapJobPostingToCardData)
+  const memberSince = companyRecord.createdAt.getFullYear()
 
   return (
     <div>
@@ -71,9 +73,7 @@ export default async function CompanyProfilePage({
                   <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                     {company.name}
                   </h1>
-                  {company.verified && (
-                    <BadgeCheckIcon className="size-5 text-primary" />
-                  )}
+                  <BadgeCheckIcon className="size-5 text-primary" />
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {company.industry}
@@ -95,7 +95,7 @@ export default async function CompanyProfilePage({
             </span>
             <span className="flex items-center gap-1.5">
               <CalendarIcon className="size-3.5" />
-              Fundada en {company.foundedYear}
+              Miembro desde {memberSince}
             </span>
             <span className="flex items-center gap-1.5">
               <BriefcaseIcon className="size-3.5" />
@@ -107,16 +107,18 @@ export default async function CompanyProfilePage({
 
         <div className="mt-8 grid grid-cols-1 gap-8 pb-16 lg:grid-cols-[1fr_320px]">
           <div className="flex flex-col gap-10">
-            <Reveal>
-              <section>
-                <h2 className="mb-3 text-lg font-semibold text-foreground">
-                  Sobre la empresa
-                </h2>
-                <p className="leading-relaxed text-muted-foreground">
-                  {company.longDescription}
-                </p>
-              </section>
-            </Reveal>
+            {company.description && (
+              <Reveal>
+                <section>
+                  <h2 className="mb-3 text-lg font-semibold text-foreground">
+                    Sobre la empresa
+                  </h2>
+                  <p className="leading-relaxed whitespace-pre-line text-muted-foreground">
+                    {company.description}
+                  </p>
+                </section>
+              </Reveal>
+            )}
 
             <Reveal delay={0.05}>
               <section>
@@ -138,25 +140,6 @@ export default async function CompanyProfilePage({
                     ))}
                   </Stagger>
                 )}
-              </section>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <section>
-                <h2 className="mb-3 text-lg font-semibold text-foreground">
-                  Beneficios
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {company.benefits.map((benefit) => (
-                    <Badge
-                      key={benefit}
-                      variant="secondary"
-                      className="h-7 rounded-full px-3 text-[13px]"
-                    >
-                      {benefit}
-                    </Badge>
-                  ))}
-                </div>
               </section>
             </Reveal>
 
@@ -186,15 +169,17 @@ export default async function CompanyProfilePage({
                 Información de contacto
               </h3>
               <dl className="flex flex-col gap-4 text-sm">
-                <div className="flex items-center gap-3">
-                  <GlobeIcon className="size-4 shrink-0 text-primary" />
-                  <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">Sitio web</dt>
-                    <dd className="truncate font-medium text-foreground">
-                      {company.website}
-                    </dd>
+                {company.website && (
+                  <div className="flex items-center gap-3">
+                    <GlobeIcon className="size-4 shrink-0 text-primary" />
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Sitio web</dt>
+                      <dd className="truncate font-medium text-foreground">
+                        {company.website}
+                      </dd>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex items-center gap-3">
                   <MailIcon className="size-4 shrink-0 text-primary" />
                   <div className="min-w-0">
@@ -204,24 +189,28 @@ export default async function CompanyProfilePage({
                     </dd>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <PhoneIcon className="size-4 shrink-0 text-primary" />
-                  <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">Teléfono</dt>
-                    <dd className="font-medium text-foreground">
-                      {company.phone}
-                    </dd>
+                {company.phone && (
+                  <div className="flex items-center gap-3">
+                    <PhoneIcon className="size-4 shrink-0 text-primary" />
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Teléfono</dt>
+                      <dd className="font-medium text-foreground">
+                        {company.phone}
+                      </dd>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPinIcon className="size-4 shrink-0 text-primary" />
-                  <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">Dirección</dt>
-                    <dd className="font-medium text-foreground">
-                      {company.address}
-                    </dd>
+                )}
+                {company.address && (
+                  <div className="flex items-center gap-3">
+                    <MapPinIcon className="size-4 shrink-0 text-primary" />
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Dirección</dt>
+                      <dd className="font-medium text-foreground">
+                        {company.address}
+                      </dd>
+                    </div>
                   </div>
-                </div>
+                )}
               </dl>
             </div>
 

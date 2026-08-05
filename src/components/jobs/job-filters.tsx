@@ -3,15 +3,12 @@
 import { Accordion, AccordionItem, AccordionTrigger, AccordionPanel } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { mockCategories } from "@/lib/mock/categories"
-import { mockCompanies } from "@/lib/mock/companies"
-import { GEO_CITIES } from "@/lib/mock/geo"
-import type { JobModality, JobSchedule } from "@/lib/mock/jobs"
+import { GEO_CITIES } from "@/lib/geo"
+import { MODALIDAD_LABELS, JORNADA_LABELS } from "@/lib/job-posting-labels"
 
-const MODALITIES: JobModality[] = ["Remoto", "Presencial", "Híbrido"]
-const SCHEDULES: JobSchedule[] = ["Tiempo completo", "Medio tiempo", "Freelance"]
+const MODALITIES = Object.values(MODALIDAD_LABELS)
+const SCHEDULES = Object.values(JORNADA_LABELS)
 const DEPARTMENTS = [...new Set(GEO_CITIES.map((c) => c.department))].sort()
-const COMPANY_NAMES = mockCompanies.map((c) => c.name)
 
 export interface SalaryBucket {
   label: string
@@ -38,6 +35,8 @@ export const DATE_BUCKETS: DateBucket[] = [
 ]
 
 interface JobFiltersProps {
+  categoryNames: string[]
+  companyNames: string[]
   categories: string[]
   onCategoriesChange: (value: string[]) => void
   modalities: string[]
@@ -90,6 +89,8 @@ function FilterGroup({
 }
 
 function JobFilters({
+  categoryNames,
+  companyNames,
   categories,
   onCategoriesChange,
   modalities,
@@ -132,7 +133,7 @@ function JobFilters({
           <AccordionTrigger>Categoría</AccordionTrigger>
           <AccordionPanel>
             <FilterGroup
-              values={mockCategories.map((c) => c.name)}
+              values={categoryNames}
               selected={categories}
               onChange={onCategoriesChange}
             />
@@ -176,7 +177,7 @@ function JobFilters({
           <AccordionTrigger>Empresa</AccordionTrigger>
           <AccordionPanel>
             <FilterGroup
-              values={COMPANY_NAMES}
+              values={companyNames}
               selected={companies}
               onChange={onCompaniesChange}
             />

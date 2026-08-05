@@ -17,11 +17,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { FadeIn } from "@/components/motion/fade-in"
-import { mockCategories } from "@/lib/mock/categories"
 
-const POPULAR_TAGS = ["Tecnología", "Marketing", "Diseño", "Finanzas"]
+const POPULAR_TAGS = [
+  "Tecnología de la Información",
+  "Marketing y Publicidad",
+  "Diseño y Multimedia",
+  "Administración y Finanzas",
+]
 
-function Hero() {
+interface HeroProps {
+  categories: { name: string; slug: string }[]
+}
+
+function Hero({ categories }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-background py-8 lg:py-12">
       <HeroBackdrop />
@@ -73,7 +81,7 @@ function Hero() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {mockCategories.map((category) => (
+                      {categories.map((category) => (
                         <SelectItem key={category.slug} value={category.name}>
                           {category.name}
                         </SelectItem>

@@ -8,7 +8,7 @@ import type L from "leaflet"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { MockJob } from "@/lib/mock/jobs"
+import type { JobCardData } from "@/lib/job-view-model"
 
 const LeafletMap = dynamic(() => import("./leaflet-map").then((m) => m.LeafletMap), {
   ssr: false,
@@ -16,7 +16,7 @@ const LeafletMap = dynamic(() => import("./leaflet-map").then((m) => m.LeafletMa
 })
 
 interface JobMapPanelProps {
-  jobs: MockJob[]
+  jobs: JobCardData[]
   hoveredJobId: string | null
   selectedJobId: string | null
   onMarkerHover: (id: string | null) => void
