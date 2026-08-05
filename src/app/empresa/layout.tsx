@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, BriefcaseIcon } from "lucide-react";
+import { LayoutDashboardIcon, BriefcaseIcon, BuildingIcon } from "lucide-react";
 
 import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
@@ -9,6 +9,7 @@ import { getMaintenanceState } from "@/services/settings/site-settings.service";
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/empresa", label: "Panel", icon: <LayoutDashboardIcon className="size-4" />, exact: true },
   { href: "/empresa/ofertas", label: "Ofertas", icon: <BriefcaseIcon className="size-4" /> },
+  { href: "/empresa/perfil", label: "Mi Empresa", icon: <BuildingIcon className="size-4" /> },
 ];
 
 export default async function EmpresaLayout({ children }: { children: React.ReactNode }) {
