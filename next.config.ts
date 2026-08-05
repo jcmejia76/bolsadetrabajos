@@ -5,7 +5,10 @@ const isProd = process.env.NODE_ENV === "production";
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
-  "frame-ancestors 'none'",
+  // 'self' (not 'none') — the app embeds its own /api/files/* PDFs in an
+  // inline <iframe> preview (see candidato/cv/[id]/page.tsx); still blocks
+  // third-party clickjacking, which is what this header actually defends against.
+  "frame-ancestors 'self'",
   "form-action 'self'",
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline'",
@@ -18,7 +21,8 @@ const contentSecurityPolicy = [
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: contentSecurityPolicy },
-  { key: "X-Frame-Options", value: "DENY" },
+  // SAMEORIGIN (not DENY) for the same reason as frame-ancestors above.
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
