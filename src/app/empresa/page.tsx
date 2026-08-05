@@ -10,19 +10,29 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmptyState } from "@/components/ui/empty-state";
 import { requireCompanySession } from "@/lib/auth-utils";
-import { getCompanyDashboardStats, listJobPostingsByCompany } from "@/services/job-posting/job-posting.service";
+import {
+  getCompanyDashboardStats,
+  listJobPostingsByCompany,
+  getCompanyJobsByCategory,
+  getCompanyApplicationsByDay,
+} from "@/services/job-posting/job-posting.service";
 import { JOB_STATUS_LABELS, JOB_STATUS_VARIANTS } from "@/lib/job-posting-labels";
+import { JobsByCategoryChart } from "@/app/admin/_components/charts/jobs-by-category-chart";
+import { ApplicationsByDayChart } from "@/app/admin/_components/charts/applications-by-day-chart";
 
 export default async function EmpresaDashboardPage() {
   const { companyId } = await requireCompanySession();
-  const [stats, jobPostings] = await Promise.all([
+  const [stats, jobPostings, jobsByCategory, applicationsByDay] = await Promise.all([
     getCompanyDashboardStats(companyId),
     listJobPostingsByCompany(companyId),
+    getCompanyJobsByCategory(companyId),
+    getCompanyApplicationsByDay(companyId),
   ]);
 
   const recentJobPostings = jobPostings.slice(0, 5);
@@ -77,6 +87,26 @@ export default async function EmpresaDashboardPage() {
             icon={<card.icon />}
           />
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Vacantes por categoría</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <JobsByCategoryChart data={jobsByCategory} />
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Postulaciones por día (30 días)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ApplicationsByDayChart data={applicationsByDay} />
+          </CardContent>
+        </Card>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5">
