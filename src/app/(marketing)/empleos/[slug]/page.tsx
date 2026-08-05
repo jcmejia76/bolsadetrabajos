@@ -33,6 +33,7 @@ import {
   listSimilarPublishedJobPostings,
 } from "@/services/job-posting/job-posting-public.service"
 import { hasCandidateApplied } from "@/services/application/application.service"
+import { listFavoriteJobIds } from "@/services/favorite/favorite.service"
 import { mapJobPostingDetailToCardData, mapJobPostingToCardData } from "@/lib/job-view-model"
 
 function formatSalaryFull(min: number | null, max: number | null, currency: string) {
@@ -76,13 +77,15 @@ export default async function JobDetailPage({
     listSimilarPublishedJobPostings(jobPosting.categoryId, jobPosting.id),
   ])
 
-  const hasApplied =
-    session?.user?.role === Role.CANDIDATO && session.user.candidateId
-      ? await hasCandidateApplied(session.user.candidateId, jobPosting.id)
-      : false
+  const candidateId =
+    session?.user?.role === Role.CANDIDATO ? (session.user.candidateId ?? null) : null
+  const [hasApplied, favoritedIds] = await Promise.all([
+    candidateId ? hasCandidateApplied(candidateId, jobPosting.id) : Promise.resolve(false),
+    candidateId ? listFavoriteJobIds(candidateId) : Promise.resolve(undefined),
+  ])
 
-  const job = mapJobPostingDetailToCardData(jobPosting)
-  const similarJobs = similar.map(mapJobPostingToCardData)
+  const job = mapJobPostingDetailToCardData(jobPosting, favoritedIds)
+  const similarJobs = similar.map((j) => mapJobPostingToCardData(j, favoritedIds))
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -153,6 +156,7 @@ export default async function JobDetailPage({
             jobSlug={jobPosting.slug}
             jobTitle={job.title}
             hasApplied={hasApplied}
+            initialSaved={job.isFavorited}
             className="sm:flex-col-reverse sm:items-stretch"
           />
         </div>

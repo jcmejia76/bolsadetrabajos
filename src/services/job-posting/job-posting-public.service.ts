@@ -32,6 +32,14 @@ export async function getPublishedJobPostingBySlug(slug: string) {
   });
 }
 
+export async function listFavoritedJobPostings(candidateId: string) {
+  return prisma.jobPosting.findMany({
+    where: { status: JobStatus.PUBLICADA, favorites: { some: { candidateId } } },
+    include: PUBLIC_JOB_INCLUDE,
+    orderBy: { publishedAt: "desc" },
+  });
+}
+
 export async function listSimilarPublishedJobPostings(categoryId: string | null, excludeId: string) {
   if (!categoryId) return [];
   return prisma.jobPosting.findMany({
