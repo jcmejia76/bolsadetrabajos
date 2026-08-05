@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@/generated/prisma/enums";
+import { logAudit } from "@/services/audit/audit.service";
+import { getRequestMeta } from "@/lib/request-meta";
 
 const LOCAL_ROOT = process.env.STORAGE_LOCAL_ROOT ?? "./storage";
 
@@ -17,9 +19,14 @@ const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
 };
 
+/** A lone path segment must not smuggle traversal or nested separators. */
+function isSafeSegment(segment: string): boolean {
+  return segment.length > 0 && segment !== ".." && !segment.includes("/") && !segment.includes("\\");
+}
+
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path: segments } = await ctx.params;
-  if (segments.length < 2) {
+  if (segments.length < 2 || !segments.every(isSafeSegment)) {
     return NextResponse.json({ error: "Ruta inválida" }, { status: 400 });
   }
   const [folder, fileName] = segments;
@@ -35,12 +42,30 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ path: stri
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const filePath = path.join(process.cwd(), LOCAL_ROOT, folder, fileName);
+  const storageRoot = path.resolve(process.cwd(), LOCAL_ROOT);
+  const filePath = path.resolve(storageRoot, folder, fileName);
+  // Regardless of role — resolved path must stay inside the storage root.
+  if (filePath !== storageRoot && !filePath.startsWith(storageRoot + path.sep)) {
+    return NextResponse.json({ error: "Ruta inválida" }, { status: 400 });
+  }
+
   let data: Buffer;
   try {
     data = await readFile(filePath);
   } catch {
     return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 });
+  }
+
+  if (folder === "cvs") {
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: session.user.id,
+      action: "CV_DOWNLOAD",
+      entityType: "CV",
+      entityId: key,
+      ipAddress,
+      userAgent,
+    });
   }
 
   const ext = path.extname(fileName).toLowerCase();

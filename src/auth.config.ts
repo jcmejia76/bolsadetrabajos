@@ -8,6 +8,9 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
+  // Explicit (not implicit via NEXTAUTH_URL detection) so the secure-cookie /
+  // __Secure-__Host- prefix behavior is auditable directly from this file.
+  useSecureCookies: process.env.NODE_ENV === "production",
   callbacks: {
     jwt({ token, user }) {
       if (user) {

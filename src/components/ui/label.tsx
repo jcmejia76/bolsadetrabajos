@@ -4,7 +4,12 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Label({ className, ...props }: React.ComponentProps<"label">) {
+interface LabelProps extends React.ComponentProps<"label"> {
+  /** Shows a visible asterisk plus an accessible "(obligatorio)" cue. */
+  required?: boolean
+}
+
+function Label({ className, required, children, ...props }: LabelProps) {
   return (
     <label
       data-slot="label"
@@ -13,7 +18,17 @@ function Label({ className, ...props }: React.ComponentProps<"label">) {
         className
       )}
       {...props}
-    />
+    >
+      {children}
+      {required && (
+        <>
+          <span aria-hidden="true" className="text-destructive">
+            *
+          </span>
+          <span className="sr-only">(obligatorio)</span>
+        </>
+      )}
+    </label>
   )
 }
 
