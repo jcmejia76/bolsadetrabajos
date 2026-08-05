@@ -11,6 +11,7 @@ export interface GeoCity {
  * save time from its city/department. Swap for a real geocoding service if
  * precision beyond "which city" is ever needed.
  */
+/** One entry per Guatemala department (22/22) so every department has an exact, matchable seat. */
 export const GEO_CITIES: GeoCity[] = [
   { city: "Ciudad de Guatemala", department: "Guatemala", lat: 14.6349, lng: -90.5069 },
   { city: "Antigua Guatemala", department: "Sacatepéquez", lat: 14.5586, lng: -90.7295 },
@@ -22,6 +23,18 @@ export const GEO_CITIES: GeoCity[] = [
   { city: "Puerto Barrios", department: "Izabal", lat: 15.7275, lng: -88.5942 },
   { city: "Chiquimula", department: "Chiquimula", lat: 14.7997, lng: -89.5461 },
   { city: "Retalhuleu", department: "Retalhuleu", lat: 14.5367, lng: -91.6789 },
+  { city: "Guastatoya", department: "El Progreso", lat: 14.9407, lng: -90.0729 },
+  { city: "Chimaltenango", department: "Chimaltenango", lat: 14.6611, lng: -90.8207 },
+  { city: "Cuilapa", department: "Santa Rosa", lat: 14.2761, lng: -90.2957 },
+  { city: "Sololá", department: "Sololá", lat: 14.7724, lng: -91.1834 },
+  { city: "Totonicapán", department: "Totonicapán", lat: 14.9112, lng: -91.3616 },
+  { city: "San Marcos", department: "San Marcos", lat: 14.9634, lng: -91.7947 },
+  { city: "Santa Cruz del Quiché", department: "Quiché", lat: 15.0299, lng: -91.1494 },
+  { city: "Salamá", department: "Baja Verapaz", lat: 15.1058, lng: -90.3181 },
+  { city: "Flores", department: "Petén", lat: 16.9284, lng: -89.8918 },
+  { city: "Zacapa", department: "Zacapa", lat: 14.9722, lng: -89.5309 },
+  { city: "Jalapa", department: "Jalapa", lat: 14.6335, lng: -89.9887 },
+  { city: "Jutiapa", department: "Jutiapa", lat: 14.2917, lng: -89.8956 },
 ]
 
 export function findGeoCity(city: string): GeoCity | undefined {

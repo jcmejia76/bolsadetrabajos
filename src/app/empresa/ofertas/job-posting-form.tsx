@@ -16,6 +16,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { KeywordInput } from "./keyword-input";
 import { RequiredLanguagesField } from "./required-languages-field";
 import { jobPostingSchema, type JobPostingFormValues } from "@/validations/job-posting.schema";
+import { GEO_CITIES } from "@/lib/geo";
 import { JobModalidad, JobJornada, ExperienceLevel, AcademicLevel } from "@/generated/prisma/enums";
 import {
   MODALIDAD_LABELS,
@@ -28,6 +29,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { createJobPostingAction, updateJobPostingAction } from "./actions";
 
 const NONE_VALUE = "__none__";
+const DEPARTMENTS = [...new Set(GEO_CITIES.map((c) => c.department))].sort();
 
 interface JobPostingFormProps {
   categories: JobCategory[];
@@ -96,6 +98,9 @@ export function JobPostingForm({
       deadline: defaultValues?.deadline ? (toDateInputValue(defaultValues.deadline) as never) : null,
     },
   });
+
+  const departmentValue = form.watch("department");
+  const citiesForDepartment = GEO_CITIES.filter((c) => c.department === departmentValue);
 
   function onSubmit(values: JobPostingFormValues) {
     setFormError(null);
@@ -237,9 +242,35 @@ export function JobPostingForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Departamento</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
+                  <Select
+                    value={field.value || NONE_VALUE}
+                    onValueChange={(v) => {
+                      const department = v === NONE_VALUE ? "" : v;
+                      field.onChange(department);
+                      form.setValue(
+                        "city",
+                        GEO_CITIES.find((c) => c.department === department)?.city ?? ""
+                      );
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona un departamento">
+                          {(value: string) =>
+                            value === NONE_VALUE ? "Remoto / sin especificar" : value
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={NONE_VALUE}>Remoto / sin especificar</SelectItem>
+                      {DEPARTMENTS.map((department) => (
+                        <SelectItem key={department} value={department}>
+                          {department}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -251,9 +282,30 @@ export function JobPostingForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ciudad</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                    disabled={!departmentValue}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={
+                            departmentValue
+                              ? "Selecciona una ciudad"
+                              : "Selecciona primero un departamento"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {citiesForDepartment.map((c) => (
+                        <SelectItem key={c.city} value={c.city}>
+                          {c.city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
