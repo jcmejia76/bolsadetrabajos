@@ -6,15 +6,22 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
 import { EmptyState } from "@/components/ui/empty-state"
 import { JobCard } from "@/components/jobs/job-card"
 import { BriefcaseIcon } from "lucide-react"
+import { auth } from "@/auth"
+import { Role } from "@/generated/prisma/enums"
 import { listPublishedJobPostings } from "@/services/job-posting/job-posting-public.service"
+import { listFavoriteJobIds } from "@/services/favorite/favorite.service"
 import { mapJobPostingToCardData } from "@/lib/job-view-model"
 
 async function FeaturedJobs() {
-  const jobPostings = await listPublishedJobPostings()
+  const [session, jobPostings] = await Promise.all([auth(), listPublishedJobPostings()])
+  const favoritedIds =
+    session?.user?.role === Role.CANDIDATO && session.user.candidateId
+      ? await listFavoriteJobIds(session.user.candidateId)
+      : undefined
   const featuredPostings = jobPostings.filter((job) => job.isFeatured)
   // Falls back to the most recent published jobs once there's no curated "featured" pick yet.
   const picks = (featuredPostings.length > 0 ? featuredPostings : jobPostings).slice(0, 6)
-  const featured = picks.map(mapJobPostingToCardData)
+  const featured = picks.map((job) => mapJobPostingToCardData(job, favoritedIds))
 
   return (
     <section className="bg-muted/30 py-20">

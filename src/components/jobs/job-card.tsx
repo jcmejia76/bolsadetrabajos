@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import { BookmarkIcon, BriefcaseIcon, ClockIcon, MapPinIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { JobCardData } from "@/lib/job-view-model"
+import { toggleFavoriteAction } from "@/lib/actions/favorites"
 
 function formatRelativeDays(days: number) {
   if (days <= 0) return "Hoy"
@@ -27,11 +29,25 @@ function formatSalary(job: JobCardData) {
 interface JobCardProps {
   job: JobCardData
   className?: string
-  initialSaved?: boolean
 }
 
-function JobCard({ job, className, initialSaved = false }: JobCardProps) {
-  const [saved, setSaved] = useState(initialSaved)
+function JobCard({ job, className }: JobCardProps) {
+  const [saved, setSaved] = useState(job.isFavorited)
+  const [isPending, startTransition] = useTransition()
+
+  function handleToggleSave() {
+    const next = !saved
+    setSaved(next)
+    startTransition(async () => {
+      const result = await toggleFavoriteAction(job.id)
+      if (!result.success) {
+        setSaved(!next)
+        toast.error(result.error)
+        return
+      }
+      toast.success(result.data.favorited ? "Empleo guardado" : "Empleo removido de guardados")
+    })
+  }
 
   return (
     <div
@@ -70,7 +86,8 @@ function JobCard({ job, className, initialSaved = false }: JobCardProps) {
           size="icon-sm"
           aria-pressed={saved}
           aria-label={saved ? "Quitar de guardados" : "Guardar empleo"}
-          onClick={() => setSaved((v) => !v)}
+          onClick={handleToggleSave}
+          disabled={isPending}
           className={cn(saved && "text-primary")}
         >
           <BookmarkIcon className={cn(saved && "fill-current")} />

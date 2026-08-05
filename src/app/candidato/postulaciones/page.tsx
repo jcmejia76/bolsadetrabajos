@@ -12,19 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockApplications, type MockApplicationStatus } from "@/lib/mock/applications";
-
-const STATUS_VARIANTS: Record<
-  MockApplicationStatus,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  Recibida: "outline",
-  "En revisión": "secondary",
-  Preseleccionado: "secondary",
-  Entrevista: "default",
-  Rechazado: "destructive",
-  Contratado: "default",
-};
+import { requireCandidateSession } from "@/lib/auth-utils";
+import { listApplicationsByCandidate } from "@/services/application/application.service";
+import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_VARIANTS } from "@/lib/application-labels";
 
 function formatRelativeDays(days: number) {
   if (days <= 0) return "Hoy";
@@ -32,7 +22,14 @@ function formatRelativeDays(days: number) {
   return `Hace ${days} días`;
 }
 
-export default function PostulacionesPage() {
+function daysSince(date: Date) {
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
+}
+
+export default async function PostulacionesPage() {
+  const { candidateId } = await requireCandidateSession();
+  const applications = await listApplicationsByCandidate(candidateId);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -42,7 +39,7 @@ export default function PostulacionesPage() {
         </p>
       </div>
 
-      {mockApplications.length === 0 ? (
+      {applications.length === 0 ? (
         <EmptyState
           icon={<SendIcon />}
           title="Aún no has aplicado a ninguna vacante"
@@ -66,38 +63,40 @@ export default function PostulacionesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockApplications.map((application) => (
+              {applications.map((application) => (
                 <TableRow key={application.id}>
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <span
                         className="flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-semibold text-white"
-                        style={{ backgroundColor: application.job.companyColor }}
+                        style={{ backgroundColor: application.jobPosting.company.color ?? "oklch(0.56 0.17 258)" }}
                       >
-                        {application.job.companyInitials}
+                        {application.jobPosting.company.initials ?? "?"}
                       </span>
                       <Link
-                        href={`/empleos/${application.job.slug}`}
+                        href={`/empleos/${application.jobPosting.slug}`}
                         className="font-medium text-foreground hover:text-primary"
                       >
-                        {application.job.title}
+                        {application.jobPosting.title}
                       </Link>
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
-                    {application.job.companyName}
+                    {application.jobPosting.company.name}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    <Badge variant={STATUS_VARIANTS[application.status]}>{application.status}</Badge>
+                    <Badge variant={APPLICATION_STATUS_VARIANTS[application.status]}>
+                      {APPLICATION_STATUS_LABELS[application.status]}
+                    </Badge>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
-                    {formatRelativeDays(application.appliedDaysAgo)}
+                    {formatRelativeDays(daysSince(application.appliedAt))}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
-                      render={<Link href={`/empleos/${application.job.slug}`} />}
+                      render={<Link href={`/empleos/${application.jobPosting.slug}`} />}
                       nativeButton={false}
                     >
                       Ver oferta

@@ -1,14 +1,16 @@
 "use client"
 
-import { memo, useState } from "react"
+import { memo, useState, useTransition } from "react"
 import Link from "next/link"
 import { BookmarkIcon, BriefcaseIcon, ClockIcon, MapPinIcon, WifiIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { JobCardData } from "@/lib/job-view-model"
 import { formatDistance } from "@/lib/geo"
+import { toggleFavoriteAction } from "@/lib/actions/favorites"
 
 function formatRelativeDays(days: number) {
   if (days <= 0) return "Hoy"
@@ -44,7 +46,22 @@ const JobListItem = memo(function JobListItem({
   distanceKm,
   className,
 }: JobListItemProps) {
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(job.isFavorited)
+  const [isPending, startTransition] = useTransition()
+
+  function handleToggleSave() {
+    const next = !saved
+    setSaved(next)
+    startTransition(async () => {
+      const result = await toggleFavoriteAction(job.id)
+      if (!result.success) {
+        setSaved(!next)
+        toast.error(result.error)
+        return
+      }
+      toast.success(result.data.favorited ? "Empleo guardado" : "Empleo removido de guardados")
+    })
+  }
 
   return (
     <div
@@ -106,8 +123,9 @@ const JobListItem = memo(function JobListItem({
           aria-label={saved ? "Quitar de guardados" : "Guardar empleo"}
           onClick={(e) => {
             e.stopPropagation()
-            setSaved((v) => !v)
+            handleToggleSave()
           }}
+          disabled={isPending}
           className={cn(saved && "text-primary")}
         >
           <BookmarkIcon className={cn(saved && "fill-current")} />

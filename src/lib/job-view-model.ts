@@ -5,9 +5,7 @@ import type { PublishedJobPosting, PublishedJobPostingDetail } from "@/services/
 /**
  * Presentational shape consumed by JobCard/JobListItem/JobMapPopup/etc.
  * Deliberately kept field-for-field compatible with the legacy `MockJob`
- * shape (still used by `/candidato/favoritos`, which has no real
- * "favorites" model yet) so those components need no changes and a
- * `MockJob` value still satisfies this type structurally.
+ * shape so those components need no logic changes when fed real data.
  */
 export interface JobCardData {
   id: string;
@@ -37,6 +35,7 @@ export interface JobCardData {
   responsibilities: string[];
   requirements: string[];
   benefits: string[];
+  isFavorited: boolean;
 }
 
 function splitToBullets(text: string | null): string[] {
@@ -57,7 +56,7 @@ function locationLabel(job: { modalidad: JobModalidad; city: string | null; depa
   return job.city ?? job.department ?? job.country ?? "Guatemala";
 }
 
-function mapCore(job: PublishedJobPosting): JobCardData {
+function mapCore(job: PublishedJobPosting, favoritedIds?: Set<string>): JobCardData {
   return {
     id: job.id,
     slug: job.slug,
@@ -86,16 +85,23 @@ function mapCore(job: PublishedJobPosting): JobCardData {
     responsibilities: [],
     requirements: [],
     benefits: [],
+    isFavorited: favoritedIds?.has(job.id) ?? false,
   };
 }
 
-export function mapJobPostingToCardData(job: PublishedJobPosting): JobCardData {
-  return mapCore(job);
+export function mapJobPostingToCardData(
+  job: PublishedJobPosting,
+  favoritedIds?: Set<string>
+): JobCardData {
+  return mapCore(job, favoritedIds);
 }
 
-export function mapJobPostingDetailToCardData(job: PublishedJobPostingDetail): JobCardData {
+export function mapJobPostingDetailToCardData(
+  job: PublishedJobPostingDetail,
+  favoritedIds?: Set<string>
+): JobCardData {
   return {
-    ...mapCore(job),
+    ...mapCore(job, favoritedIds),
     responsibilities: splitToBullets(job.responsibilities),
     requirements: splitToBullets(job.requirements),
     benefits: splitToBullets(job.benefits),
