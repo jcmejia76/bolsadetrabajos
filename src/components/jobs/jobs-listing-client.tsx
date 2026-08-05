@@ -62,6 +62,7 @@ function JobsListingClient({
   const [categories, setCategories] = useState<string[]>(initialCategory ? [initialCategory] : [])
   const [modalities, setModalities] = useState<string[]>([])
   const [schedules, setSchedules] = useState<string[]>([])
+  const [countries, setCountries] = useState<string[]>([])
   const [departments, setDepartments] = useState<string[]>([])
   const [companies, setCompanies] = useState<string[]>([])
   const [salaryBuckets, setSalaryBuckets] = useState<string[]>([])
@@ -96,6 +97,8 @@ function JobsListingClient({
       const matchesCategory = categories.length === 0 || categories.includes(job.category)
       const matchesModality = modalities.length === 0 || modalities.includes(job.modality)
       const matchesSchedule = schedules.length === 0 || schedules.includes(job.schedule)
+      const matchesCountry =
+        countries.length === 0 || (!!job.country && countries.includes(job.country))
       const matchesDepartment =
         departments.length === 0 || (!!job.department && departments.includes(job.department))
       const matchesCompany = companies.length === 0 || companies.includes(job.companyName)
@@ -122,6 +125,7 @@ function JobsListingClient({
         matchesCategory &&
         matchesModality &&
         matchesSchedule &&
+        matchesCountry &&
         matchesDepartment &&
         matchesCompany &&
         matchesSalary &&
@@ -148,6 +152,7 @@ function JobsListingClient({
     categories,
     modalities,
     schedules,
+    countries,
     departments,
     companies,
     salaryBuckets,
@@ -176,6 +181,7 @@ function JobsListingClient({
     categories.length +
     modalities.length +
     schedules.length +
+    countries.length +
     departments.length +
     companies.length +
     salaryBuckets.length +
@@ -189,6 +195,7 @@ function JobsListingClient({
     setCategories([])
     setModalities([])
     setSchedules([])
+    setCountries([])
     setDepartments([])
     setCompanies([])
     setSalaryBuckets([])
@@ -210,6 +217,12 @@ function JobsListingClient({
     schedules,
     onSchedulesChange: (v: string[]) => {
       setSchedules(v)
+      resetPaging()
+    },
+    countries,
+    onCountriesChange: (v: string[]) => {
+      setCountries(v)
+      setDepartments([])
       resetPaging()
     },
     departments,

@@ -27,7 +27,11 @@ export default async function OfertasPage({
     ? (status as JobStatus)
     : undefined;
 
-  const jobPostings = await listJobPostingsByCompany(companyId, activeStatus);
+  const jobPostings = (await listJobPostingsByCompany(companyId, activeStatus)).map((job) => ({
+    ...job,
+    salaryMin: job.salaryMin ? Number(job.salaryMin) : null,
+    salaryMax: job.salaryMax ? Number(job.salaryMax) : null,
+  }));
 
   return (
     <div className="flex flex-col gap-6">

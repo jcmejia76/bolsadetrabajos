@@ -33,7 +33,10 @@ import {
 } from "./actions";
 import { ReasonDialog } from "../_components/reason-dialog";
 
-type JobRow = Awaited<ReturnType<typeof listJobPostingsForAdmin>>["jobPostings"][number];
+type JobRow = Omit<
+  Awaited<ReturnType<typeof listJobPostingsForAdmin>>["jobPostings"][number],
+  "salaryMin" | "salaryMax"
+> & { salaryMin: number | null; salaryMax: number | null };
 
 export function JobPostingsAdminTable({ jobPostings }: { jobPostings: JobRow[] }) {
   const router = useRouter();

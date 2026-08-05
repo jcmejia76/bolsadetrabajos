@@ -17,8 +17,9 @@ const DARK_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 
-const GUATEMALA_CENTER: [number, number] = [14.85, -90.6]
-const DEFAULT_ZOOM = 8
+/** Fallback view when there are no geolocated jobs yet — roughly centered on the Americas. */
+const AMERICAS_CENTER: [number, number] = [10, -80]
+const AMERICAS_ZOOM = 3
 
 interface MapControllerProps {
   userLocation: { lat: number; lng: number } | null
@@ -61,6 +62,25 @@ function MapController({ userLocation, onBoundsChange }: MapControllerProps) {
   return null
 }
 
+/** Frames the map around the jobs available on first load, since they may be anywhere in the Americas. */
+function FitToJobsOnMount({ jobs }: { jobs: JobCardData[] }) {
+  const map = useMap()
+  const didFit = useRef(false)
+
+  useEffect(() => {
+    if (didFit.current) return
+    const coords = jobs
+      .filter((job): job is JobCardData & { lat: number; lng: number } => job.lat != null && job.lng != null)
+      .map((job) => [job.lat, job.lng] as [number, number])
+    if (coords.length > 0) {
+      map.fitBounds(coords, { padding: [48, 48], maxZoom: 12 })
+      didFit.current = true
+    }
+  }, [jobs, map])
+
+  return null
+}
+
 interface LeafletMapProps {
   jobs: JobCardData[]
   hoveredJobId: string | null
@@ -87,8 +107,8 @@ function LeafletMap({
 
   return (
     <MapContainer
-      center={GUATEMALA_CENTER}
-      zoom={DEFAULT_ZOOM}
+      center={AMERICAS_CENTER}
+      zoom={AMERICAS_ZOOM}
       className="size-full"
       zoomControl={false}
       ref={(map) => {
@@ -110,6 +130,7 @@ function LeafletMap({
         onMarkerHover={onMarkerHover}
         onMarkerClick={onMarkerClick}
       />
+      <FitToJobsOnMount jobs={jobs} />
       <MapController userLocation={userLocation} onBoundsChange={onBoundsChange} />
     </MapContainer>
   )
