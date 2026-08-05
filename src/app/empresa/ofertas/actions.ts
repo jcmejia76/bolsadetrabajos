@@ -2,13 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { requireCompanySession } from "@/lib/auth-utils";
-import { actionOk, actionError, type ActionResult } from "@/lib/action-result";
+import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import { jobPostingSchema } from "@/validations/job-posting.schema";
 import * as jobPostingService from "@/services/job-posting/job-posting.service";
-
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
-}
 
 function revalidateOfertas() {
   revalidatePath("/empresa/ofertas");

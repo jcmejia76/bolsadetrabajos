@@ -12,19 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ApplicationStatus } from "@/generated/prisma/enums";
-import { APPLICATION_STATUS_LABELS } from "@/lib/application-labels";
+import { APPLICATION_STATUS_LABELS, APPLICATION_STATUS_VARIANTS } from "@/lib/application-labels";
 import { listApplicationsForAdmin } from "@/services/admin/application-review.service";
 import { ApplicationsFilterBar } from "./applications-filter-bar";
-
-const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  [ApplicationStatus.RECIBIDA]: "outline",
-  [ApplicationStatus.EN_REVISION]: "secondary",
-  [ApplicationStatus.VISTA]: "secondary",
-  [ApplicationStatus.PRESELECCIONADO]: "secondary",
-  [ApplicationStatus.ENTREVISTA]: "secondary",
-  [ApplicationStatus.RECHAZADO]: "destructive",
-  [ApplicationStatus.CONTRATADO]: "default",
-};
 
 export default async function AdminPostulacionesPage({
   searchParams,
@@ -86,7 +76,7 @@ export default async function AdminPostulacionesPage({
                     {application.jobPosting.company.name}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    <Badge variant={STATUS_VARIANTS[application.status]}>
+                    <Badge variant={APPLICATION_STATUS_VARIANTS[application.status]}>
                       {APPLICATION_STATUS_LABELS[application.status]}
                     </Badge>
                   </TableCell>

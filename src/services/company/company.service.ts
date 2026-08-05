@@ -7,17 +7,27 @@ function emptyToNull(value: string | undefined | null): string | null {
   return value && value.trim() !== "" ? value : null;
 }
 
-export async function listCompanies(filters: { status?: CompanyStatus; search?: string } = {}) {
-  return prisma.company.findMany({
-    where: {
-      ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.search
-        ? { name: { contains: filters.search, mode: "insensitive" } }
-        : {}),
-    },
-    include: { _count: { select: { jobPostings: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listCompanies(
+  filters: { status?: CompanyStatus; search?: string } = {},
+  page = 1,
+  pageSize = 25
+) {
+  const where = {
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.search ? { name: { contains: filters.search, mode: "insensitive" as const } } : {}),
+  };
+  const [companies, total] = await Promise.all([
+    prisma.company.findMany({
+      where,
+      include: { _count: { select: { jobPostings: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.company.count({ where }),
+  ]);
+
+  return { companies, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
 export async function getCompanyById(companyId: string) {

@@ -94,7 +94,7 @@ export function RegisterForm() {
           {type === "candidato" ? (
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="firstName">Nombre</Label>
+                <Label htmlFor="firstName" required>Nombre</Label>
                 <Input
                   id="firstName"
                   required
@@ -104,7 +104,7 @@ export function RegisterForm() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="lastName">Apellido</Label>
+                <Label htmlFor="lastName" required>Apellido</Label>
                 <Input
                   id="lastName"
                   required
@@ -116,7 +116,7 @@ export function RegisterForm() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              <Label htmlFor="companyName">Nombre de la empresa</Label>
+              <Label htmlFor="companyName" required>Nombre de la empresa</Label>
               <Input
                 id="companyName"
                 required
@@ -128,7 +128,7 @@ export function RegisterForm() {
           )}
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Correo electrónico</Label>
+            <Label htmlFor="email" required>Correo electrónico</Label>
             <Input
               id="email"
               type="email"
@@ -139,7 +139,7 @@ export function RegisterForm() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password" required>Contraseña</Label>
             <Input
               id="password"
               type="password"

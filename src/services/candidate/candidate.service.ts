@@ -52,7 +52,11 @@ export async function updateCandidatePhoto(
   candidateId: string,
   file: { buffer: Buffer; originalName: string; mimeType: string }
 ) {
-  validateFile({ mimeType: file.mimeType, sizeBytes: file.buffer.byteLength }, "image", 2);
+  validateFile(
+    { mimeType: file.mimeType, sizeBytes: file.buffer.byteLength, buffer: file.buffer, originalName: file.originalName },
+    "image",
+    2
+  );
 
   const existing = await prisma.candidate.findUniqueOrThrow({ where: { id: candidateId } });
   const storage = getStorageService();

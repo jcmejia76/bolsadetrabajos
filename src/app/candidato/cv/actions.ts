@@ -2,12 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { requireCandidateSession } from "@/lib/auth-utils";
-import { actionOk, actionError, type ActionResult } from "@/lib/action-result";
+import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import * as cvService from "@/services/cv/cv.service";
-
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
-}
 
 function revalidateCvs() {
   revalidatePath("/candidato/cv");

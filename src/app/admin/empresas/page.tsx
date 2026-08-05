@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { listCompanies } from "@/services/company/company.service";
 import { CompanyStatus } from "@/generated/prisma/enums";
 import { CompaniesTable } from "./companies-table";
@@ -15,17 +16,20 @@ const STATUS_FILTERS: { label: string; value?: CompanyStatus }[] = [
 export default async function AdminEmpresasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, page } = await searchParams;
   const hasStatusParam = status !== undefined;
   const activeStatus = Object.values(CompanyStatus).includes(status as CompanyStatus)
     ? (status as CompanyStatus)
     : hasStatusParam
       ? undefined
       : CompanyStatus.PENDIENTE;
+  const currentPage = Math.max(1, Number(page) || 1);
 
-  const companies = await listCompanies({ status: activeStatus });
+  const { companies, totalPages } = await listCompanies({ status: activeStatus }, currentPage);
+
+  const statusQuery = activeStatus ? `status=${activeStatus}` : hasStatusParam ? "status=all" : "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -54,6 +58,44 @@ export default async function AdminEmpresasPage({
       </div>
 
       <CompaniesTable companies={companies} />
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Página {currentPage} de {Math.max(1, totalPages)}
+        </p>
+        <div className="flex gap-2">
+          {currentPage <= 1 ? (
+            <Button variant="outline" disabled>
+              Anterior
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              render={
+                <Link href={`/admin/empresas?page=${currentPage - 1}${statusQuery ? `&${statusQuery}` : ""}`} />
+              }
+              nativeButton={false}
+            >
+              Anterior
+            </Button>
+          )}
+          {currentPage >= totalPages ? (
+            <Button variant="outline" disabled>
+              Siguiente
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              render={
+                <Link href={`/admin/empresas?page=${currentPage + 1}${statusQuery ? `&${statusQuery}` : ""}`} />
+              }
+              nativeButton={false}
+            >
+              Siguiente
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

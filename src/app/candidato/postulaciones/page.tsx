@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { mockApplications, type MockApplicationStatus } from "@/lib/mock/applications";
 
-const STATUS_VARIANT: Record<
+const STATUS_VARIANTS: Record<
   MockApplicationStatus,
   "default" | "secondary" | "destructive" | "outline"
 > = {
@@ -88,7 +88,7 @@ export default function PostulacionesPage() {
                     {application.job.companyName}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    <Badge variant={STATUS_VARIANT[application.status]}>{application.status}</Badge>
+                    <Badge variant={STATUS_VARIANTS[application.status]}>{application.status}</Badge>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-muted-foreground">
                     {formatRelativeDays(application.appliedDaysAgo)}
