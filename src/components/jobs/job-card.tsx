@@ -7,7 +7,7 @@ import { BookmarkIcon, BriefcaseIcon, ClockIcon, MapPinIcon } from "lucide-react
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import type { MockJob } from "@/lib/mock/jobs"
+import type { JobCardData } from "@/lib/job-view-model"
 
 function formatRelativeDays(days: number) {
   if (days <= 0) return "Hoy"
@@ -15,13 +15,17 @@ function formatRelativeDays(days: number) {
   return `Hace ${days} días`
 }
 
-function formatSalary(job: MockJob) {
+function formatSalary(job: JobCardData) {
+  if (job.salaryMin == null && job.salaryMax == null) return "A convenir"
   const format = (n: number) => `${(n / 1000).toFixed(0)}k`
-  return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  if (job.salaryMin != null && job.salaryMax != null) {
+    return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  }
+  return `${job.currency} ${format((job.salaryMin ?? job.salaryMax)!)}`
 }
 
 interface JobCardProps {
-  job: MockJob
+  job: JobCardData
   className?: string
   initialSaved?: boolean
 }

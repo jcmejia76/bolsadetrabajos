@@ -2,9 +2,12 @@ import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
-import { mockCategories } from "@/lib/mock/categories"
+import { listCategoriesWithJobCounts } from "@/services/job-posting/job-posting-public.service"
+import { getCategoryIcon } from "@/lib/job-category-icons"
 
-function PopularCategories() {
+async function PopularCategories() {
+  const categories = await listCategoriesWithJobCounts()
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <Reveal className="mx-auto mb-12 max-w-2xl text-center">
@@ -18,8 +21,8 @@ function PopularCategories() {
       </Reveal>
 
       <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {mockCategories.map((category) => {
-          const Icon = category.icon
+        {categories.map((category) => {
+          const Icon = getCategoryIcon(category.slug)
           return (
             <StaggerItem key={category.slug}>
               <Link
@@ -37,7 +40,7 @@ function PopularCategories() {
                     {category.name}
                   </h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {category.jobCount} vacantes
+                    {category._count.jobPostings} vacante{category._count.jobPostings === 1 ? "" : "s"}
                   </p>
                 </div>
               </Link>

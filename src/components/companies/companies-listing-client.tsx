@@ -9,27 +9,30 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Stagger, StaggerItem } from "@/components/motion/reveal"
 import { CompanyCard } from "@/components/companies/company-card"
-import { mockCompanies } from "@/lib/mock/companies"
-
-const INDUSTRIES = Array.from(
-  new Set(mockCompanies.map((company) => company.industry))
-).sort()
+import type { CompanyCardData } from "@/lib/company-view-model"
 
 interface CompaniesListingClientProps {
+  companies: CompanyCardData[]
   initialQuery: string
   initialIndustry: string
 }
 
 function CompaniesListingClient({
+  companies,
   initialQuery,
   initialIndustry,
 }: CompaniesListingClientProps) {
   const [query, setQuery] = useState(initialQuery)
   const [industry, setIndustry] = useState(initialIndustry)
 
+  const industries = useMemo(
+    () => Array.from(new Set(companies.map((c) => c.industry))).sort(),
+    [companies]
+  )
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return mockCompanies.filter((company) => {
+    return companies.filter((company) => {
       const matchesQuery =
         !q ||
         company.name.toLowerCase().includes(q) ||
@@ -37,7 +40,7 @@ function CompaniesListingClient({
       const matchesIndustry = !industry || company.industry === industry
       return matchesQuery && matchesIndustry
     })
-  }, [query, industry])
+  }, [companies, query, industry])
 
   function handleClear() {
     setQuery("")
@@ -81,7 +84,7 @@ function CompaniesListingClient({
         >
           Todas
         </button>
-        {INDUSTRIES.map((item) => (
+        {industries.map((item) => (
           <button
             key={item}
             type="button"

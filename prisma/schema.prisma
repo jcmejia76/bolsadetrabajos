@@ -239,6 +239,10 @@ model Company {
   name         String
   slug         String  @unique
   logoUrl      String?
+  /// Hex color for the initials avatar shown wherever no logo is set.
+  color        String?
+  /// 1-2 letter avatar initials derived from `name` at creation time.
+  initials     String?
   description  String? @db.Text
   industry     String?
   size         String?
@@ -414,6 +418,9 @@ model JobPosting {
   department String?
   city       String?
   country    String?
+  /// Approximate coordinates derived from city/department at save time, for the public map view.
+  lat        Float?
+  lng        Float?
 
   salaryMin     Decimal? @db.Decimal(10, 2)
   salaryMax     Decimal? @db.Decimal(10, 2)

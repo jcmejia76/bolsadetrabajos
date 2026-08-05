@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { generateSlugCandidate } from "@/lib/slug";
+import { deriveJobCoordinates } from "@/lib/geo";
 import { JobStatus, Prisma } from "@/generated/prisma/client";
 import type { JobPostingInput } from "@/validations/job-posting.schema";
 
@@ -8,15 +9,21 @@ function emptyToNull(value: string | undefined | null): string | null {
 }
 
 export function toJobPostingData(input: JobPostingInput) {
+  const city = emptyToNull(input.city);
+  const department = emptyToNull(input.department);
+  const coordinates = deriveJobCoordinates(city, department);
+
   return {
     title: input.title,
     category: { connect: { id: input.categoryId } },
     professionalArea: emptyToNull(input.professionalArea),
     modalidad: input.modalidad,
     jornada: input.jornada,
-    department: emptyToNull(input.department),
-    city: emptyToNull(input.city),
+    department,
+    city,
     country: emptyToNull(input.country),
+    lat: coordinates?.lat ?? null,
+    lng: coordinates?.lng ?? null,
     salaryMin: input.salaryMin ?? null,
     salaryMax: input.salaryMax ?? null,
     salaryVisible: input.salaryVisible,
@@ -148,6 +155,8 @@ export async function duplicateJobPosting(
     department: existing.department,
     city: existing.city,
     country: existing.country,
+    lat: existing.lat,
+    lng: existing.lng,
     salaryMin: existing.salaryMin,
     salaryMax: existing.salaryMax,
     salaryVisible: existing.salaryVisible,

@@ -6,12 +6,12 @@ import L from "leaflet"
 import "leaflet.markercluster"
 import { useMap } from "react-leaflet"
 
-import type { MockJob } from "@/lib/mock/jobs"
+import type { JobCardData } from "@/lib/job-view-model"
 import { createClusterIcon, createJobMarkerIcon } from "./job-marker-icon"
 import { JobMapPopupContent } from "./job-map-popup"
 
 interface MarkerClusterGroupProps {
-  jobs: MockJob[]
+  jobs: JobCardData[]
   hoveredJobId: string | null
   selectedJobId: string | null
   onMarkerHover: (id: string | null) => void

@@ -26,8 +26,8 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { JobListItem } from "@/components/jobs/job-list-item"
 import { JobFilters, SALARY_BUCKETS, DATE_BUCKETS } from "@/components/jobs/job-filters"
 import { JobMapPanel } from "@/components/jobs/job-map/job-map-panel"
-import { mockJobs, type MockJob } from "@/lib/mock/jobs"
-import { haversineDistanceKm } from "@/lib/mock/geo"
+import type { JobCardData } from "@/lib/job-view-model"
+import { haversineDistanceKm } from "@/lib/geo"
 
 const PAGE_SIZE = 10
 
@@ -41,12 +41,18 @@ const SORT_LABELS: Record<SortOption, string> = {
 }
 
 interface JobsListingClientProps {
+  jobs: JobCardData[]
+  categoryNames: string[]
+  companyNames: string[]
   initialQuery: string
   initialLocation: string
   initialCategory: string
 }
 
 function JobsListingClient({
+  jobs,
+  categoryNames,
+  companyNames,
   initialQuery,
   initialLocation,
   initialCategory,
@@ -80,7 +86,7 @@ function JobsListingClient({
     const q = query.trim().toLowerCase()
     const loc = location.trim().toLowerCase()
 
-    const result = mockJobs.filter((job) => {
+    const result = jobs.filter((job) => {
       const matchesQuery =
         !q ||
         job.title.toLowerCase().includes(q) ||
@@ -95,10 +101,12 @@ function JobsListingClient({
       const matchesCompany = companies.length === 0 || companies.includes(job.companyName)
       const matchesSalary =
         salaryBuckets.length === 0 ||
-        salaryBuckets.some((label) => {
-          const bucket = SALARY_BUCKETS.find((b) => b.label === label)
-          return !!bucket && job.salaryMax >= bucket.min && job.salaryMin <= bucket.max
-        })
+        (job.salaryMin != null &&
+          job.salaryMax != null &&
+          salaryBuckets.some((label) => {
+            const bucket = SALARY_BUCKETS.find((b) => b.label === label)
+            return !!bucket && job.salaryMax! >= bucket.min && job.salaryMin! <= bucket.max
+          }))
       const matchesDate =
         datePosted.length === 0 ||
         datePosted.some((label) => {
@@ -122,18 +130,19 @@ function JobsListingClient({
       )
     })
 
-    const distanceOf = (job: MockJob) =>
+    const distanceOf = (job: JobCardData) =>
       userLocation && job.lat != null && job.lng != null
         ? haversineDistanceKm(userLocation, { lat: job.lat, lng: job.lng })
         : Infinity
 
     return [...result].sort((a, b) => {
-      if (sort === "salario-desc") return b.salaryMax - a.salaryMax
-      if (sort === "salario-asc") return a.salaryMax - b.salaryMax
+      if (sort === "salario-desc") return (b.salaryMax ?? 0) - (a.salaryMax ?? 0)
+      if (sort === "salario-asc") return (a.salaryMax ?? 0) - (b.salaryMax ?? 0)
       if (sort === "distancia") return distanceOf(a) - distanceOf(b)
       return a.postedDaysAgo - b.postedDaysAgo
     })
   }, [
+    jobs,
     query,
     location,
     categories,
@@ -353,7 +362,12 @@ function JobsListingClient({
                   <SheetHeader>
                     <SheetTitle>Filtros</SheetTitle>
                   </SheetHeader>
-                  <JobFilters {...filterProps} className="px-4 pb-6" />
+                  <JobFilters
+                    {...filterProps}
+                    categoryNames={categoryNames}
+                    companyNames={companyNames}
+                    className="px-4 pb-6"
+                  />
                 </SheetContent>
               </Sheet>
 
