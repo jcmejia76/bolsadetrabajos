@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { generateSlugCandidate } from "@/lib/slug";
 import { deriveJobCoordinates } from "@/lib/geo";
+import { fillDailySeries } from "@/lib/date-series";
 import { JobStatus, Prisma } from "@/generated/prisma/client";
 import type { JobPostingInput } from "@/validations/job-posting.schema";
 
@@ -247,4 +248,42 @@ export async function getCompanyDashboardStats(companyId: string) {
     vacantesActivas: publicadas._sum.vacancies ?? 0,
     postulantesTotales,
   };
+}
+
+export async function getCompanyJobsByCategory(companyId: string) {
+  const groups = await prisma.jobPosting.groupBy({
+    by: ["categoryId"],
+    where: { companyId, status: JobStatus.PUBLICADA },
+    _count: { _all: true },
+  });
+  const categoryIds = groups.map((g) => g.categoryId).filter((id): id is string => id !== null);
+  const categories = await prisma.jobCategory.findMany({ where: { id: { in: categoryIds } } });
+  const nameById = new Map(categories.map((c) => [c.id, c.name]));
+
+  return groups
+    .map((g) => ({
+      category: g.categoryId ? (nameById.get(g.categoryId) ?? "Sin categoría") : "Sin categoría",
+      vacantes: g._count._all,
+    }))
+    .sort((a, b) => b.vacantes - a.vacantes);
+}
+
+export async function getCompanyApplicationsByDay(companyId: string, days = 30) {
+  const since = new Date();
+  since.setDate(since.getDate() - days + 1);
+  since.setHours(0, 0, 0, 0);
+
+  const rows = await prisma.$queryRaw<{ day: Date; count: number }[]>`
+    SELECT date_trunc('day', a."appliedAt") as day, COUNT(*)::int as count
+    FROM "Application" a
+    JOIN "JobPosting" jp ON jp.id = a."jobPostingId"
+    WHERE jp."companyId" = ${companyId} AND a."appliedAt" >= ${since}
+    GROUP BY day
+    ORDER BY day
+  `;
+
+  return fillDailySeries(
+    rows.map((r) => ({ date: r.day, count: r.count })),
+    days
+  );
 }
