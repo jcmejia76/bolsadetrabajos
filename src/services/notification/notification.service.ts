@@ -25,3 +25,33 @@ export async function createNotification(input: CreateNotificationInput, db: Db 
     },
   });
 }
+
+const RECENT_NOTIFICATIONS_LIMIT = 20;
+
+export async function listRecentNotifications(userId: string) {
+  return prisma.notification.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: RECENT_NOTIFICATIONS_LIMIT,
+  });
+}
+
+export async function countUnreadNotifications(userId: string) {
+  return prisma.notification.count({ where: { userId, isRead: false } });
+}
+
+export async function markNotificationAsRead(userId: string, notificationId: string) {
+  await prisma.notification.updateMany({
+    where: { id: notificationId, userId },
+    data: { isRead: true, readAt: new Date() },
+  });
+}
+
+export async function markAllNotificationsAsRead(userId: string) {
+  await prisma.notification.updateMany({
+    where: { userId, isRead: false },
+    data: { isRead: true, readAt: new Date() },
+  });
+}
+
+export type RecentNotification = Awaited<ReturnType<typeof listRecentNotifications>>[number];

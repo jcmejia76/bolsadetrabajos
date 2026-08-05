@@ -6,6 +6,8 @@ import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/side
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen";
 import { getMaintenanceState } from "@/services/settings/site-settings.service";
 import { getCompanyStaffPermissions } from "@/services/staff/staff.service";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
+import { listRecentNotifications, countUnreadNotifications } from "@/services/notification/notification.service";
 
 export default async function EmpresaLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole(Role.EMPRESA);
@@ -14,10 +16,11 @@ export default async function EmpresaLayout({ children }: { children: React.Reac
   const { maintenanceMode, maintenanceMessage } = await getMaintenanceState();
   if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />;
 
-  const { isOwner, permissions } = await getCompanyStaffPermissions(
-    session.user.id,
-    session.user.companyId!
-  );
+  const [{ isOwner, permissions }, notifications, unreadCount] = await Promise.all([
+    getCompanyStaffPermissions(session.user.id, session.user.companyId!),
+    listRecentNotifications(session.user.id),
+    countUnreadNotifications(session.user.id),
+  ]);
 
   const navItems: DashboardNavItem[] = [
     { href: "/empresa", label: "Panel", icon: <LayoutDashboardIcon className="size-4" />, exact: true },
@@ -35,6 +38,7 @@ export default async function EmpresaLayout({ children }: { children: React.Reac
       navItems={navItems}
       panelLabel="Panel de Empresa"
       userLabel={session.user.email ?? undefined}
+      notificationsSlot={<NotificationsBell notifications={notifications} unreadCount={unreadCount} />}
     >
       {children}
     </SidebarShell>

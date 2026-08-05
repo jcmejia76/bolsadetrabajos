@@ -28,6 +28,7 @@ interface SidebarShellProps {
   navItems: DashboardNavItem[]
   panelLabel: string
   userLabel?: string
+  notificationsSlot?: ReactNode
   children: ReactNode
 }
 
@@ -101,6 +102,7 @@ function SidebarShell({
   navItems,
   panelLabel,
   userLabel,
+  notificationsSlot,
   children,
 }: SidebarShellProps) {
   const pathname = usePathname()
@@ -110,8 +112,9 @@ function SidebarShell({
     <div className="flex min-h-screen bg-muted/30">
       <SkipLink />
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card px-4 py-5 lg:flex">
-        <div className="mb-6 px-1">
+        <div className="mb-6 flex items-center justify-between px-1">
           <Brand />
+          {notificationsSlot}
         </div>
         <div className="mb-4 px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
           {panelLabel}
@@ -158,9 +161,10 @@ function SidebarShell({
               </div>
             </SheetContent>
           </Sheet>
-          <span className="text-sm font-semibold text-foreground">
+          <span className="flex-1 text-sm font-semibold text-foreground">
             {panelLabel}
           </span>
+          {notificationsSlot}
         </header>
 
         <main id="main-content" className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
