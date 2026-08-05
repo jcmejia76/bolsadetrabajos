@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { generateSlugCandidate } from "@/lib/slug";
-import { deriveJobCoordinates } from "@/lib/geo";
+import { deriveJobCoordinates, getCurrencyForCountry } from "@/lib/geo";
 import { fillDailySeries } from "@/lib/date-series";
 import { JobStatus, Prisma } from "@/generated/prisma/client";
 import type { JobPostingInput } from "@/validations/job-posting.schema";
@@ -12,7 +12,8 @@ function emptyToNull(value: string | undefined | null): string | null {
 export function toJobPostingData(input: JobPostingInput) {
   const city = emptyToNull(input.city);
   const department = emptyToNull(input.department);
-  const coordinates = deriveJobCoordinates(city, department);
+  const country = emptyToNull(input.country);
+  const coordinates = deriveJobCoordinates(country, department, city);
 
   return {
     title: input.title,
@@ -22,12 +23,13 @@ export function toJobPostingData(input: JobPostingInput) {
     jornada: input.jornada,
     department,
     city,
-    country: emptyToNull(input.country),
+    country,
     lat: coordinates?.lat ?? null,
     lng: coordinates?.lng ?? null,
     salaryMin: input.salaryMin ?? null,
     salaryMax: input.salaryMax ?? null,
     salaryVisible: input.salaryVisible,
+    currency: getCurrencyForCountry(country),
     description: input.description,
     responsibilities: emptyToNull(input.responsibilities),
     requirements: emptyToNull(input.requirements),
@@ -161,6 +163,7 @@ export async function duplicateJobPosting(
     salaryMin: existing.salaryMin,
     salaryMax: existing.salaryMax,
     salaryVisible: existing.salaryVisible,
+    currency: existing.currency,
     description: existing.description,
     responsibilities: existing.responsibilities,
     requirements: existing.requirements,

@@ -38,7 +38,10 @@ import {
 } from "./actions";
 import { DeleteJobPostingDialog } from "./delete-job-posting-dialog";
 
-type JobPostingRow = Awaited<ReturnType<typeof listJobPostingsByCompany>>[number];
+type JobPostingRow = Omit<
+  Awaited<ReturnType<typeof listJobPostingsByCompany>>[number],
+  "salaryMin" | "salaryMax"
+> & { salaryMin: number | null; salaryMax: number | null };
 
 export function JobPostingsTable({ jobPostings }: { jobPostings: JobPostingRow[] }) {
   const router = useRouter();

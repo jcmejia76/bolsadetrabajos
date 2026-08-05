@@ -426,6 +426,8 @@ model JobPosting {
   salaryMin     Decimal? @db.Decimal(10, 2)
   salaryMax     Decimal? @db.Decimal(10, 2)
   salaryVisible Boolean  @default(false)
+  /// ISO 4217 code, derived from `country` at save time.
+  currency      String   @default("GTQ")
 
   description      String  @db.Text
   responsibilities String? @db.Text

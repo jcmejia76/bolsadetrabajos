@@ -3,12 +3,12 @@
 import { Accordion, AccordionItem, AccordionTrigger, AccordionPanel } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { GEO_CITIES } from "@/lib/geo"
+import { COUNTRIES, GEO_CITIES } from "@/lib/geo"
 import { MODALIDAD_LABELS, JORNADA_LABELS } from "@/lib/job-posting-labels"
 
 const MODALITIES = Object.values(MODALIDAD_LABELS)
 const SCHEDULES = Object.values(JORNADA_LABELS)
-const DEPARTMENTS = [...new Set(GEO_CITIES.map((c) => c.department))].sort()
+const COUNTRY_NAMES = COUNTRIES.map((c) => c.name).sort()
 
 export interface SalaryBucket {
   label: string
@@ -21,11 +21,17 @@ export interface DateBucket {
   maxDays: number
 }
 
+/**
+ * Bucket edges are raw numbers, not normalized across currencies — a job
+ * posted in a different currency than the reader expects will not compare
+ * meaningfully. Acceptable while listings are dominated by a single market;
+ * revisit with real FX rates if the catalog becomes genuinely multi-currency.
+ */
 export const SALARY_BUCKETS: SalaryBucket[] = [
-  { label: "Menos de Q5,000", min: 0, max: 5000 },
-  { label: "Q5,000 - Q10,000", min: 5000, max: 10000 },
-  { label: "Q10,000 - Q15,000", min: 10000, max: 15000 },
-  { label: "Más de Q15,000", min: 15000, max: Infinity },
+  { label: "Menos de 5,000", min: 0, max: 5000 },
+  { label: "5,000 - 10,000", min: 5000, max: 10000 },
+  { label: "10,000 - 15,000", min: 10000, max: 15000 },
+  { label: "Más de 15,000", min: 15000, max: Infinity },
 ]
 
 export const DATE_BUCKETS: DateBucket[] = [
@@ -43,6 +49,8 @@ interface JobFiltersProps {
   onModalitiesChange: (value: string[]) => void
   schedules: string[]
   onSchedulesChange: (value: string[]) => void
+  countries: string[]
+  onCountriesChange: (value: string[]) => void
   departments: string[]
   onDepartmentsChange: (value: string[]) => void
   companies: string[]
@@ -97,6 +105,8 @@ function JobFilters({
   onModalitiesChange,
   schedules,
   onSchedulesChange,
+  countries,
+  onCountriesChange,
   departments,
   onDepartmentsChange,
   companies,
@@ -108,10 +118,19 @@ function JobFilters({
   onClear,
   className,
 }: JobFiltersProps) {
+  const regionsForCountries = [
+    ...new Set(
+      GEO_CITIES.filter((c) => countries.length === 0 || countries.includes(c.country)).map(
+        (c) => c.department
+      )
+    ),
+  ].sort()
+
   const activeCount =
     categories.length +
     modalities.length +
     schedules.length +
+    countries.length +
     departments.length +
     companies.length +
     salaryBuckets.length +
@@ -162,11 +181,22 @@ function JobFilters({
           </AccordionPanel>
         </AccordionItem>
 
-        <AccordionItem value="departamento">
-          <AccordionTrigger>Departamento</AccordionTrigger>
+        <AccordionItem value="pais">
+          <AccordionTrigger>País</AccordionTrigger>
           <AccordionPanel>
             <FilterGroup
-              values={DEPARTMENTS}
+              values={COUNTRY_NAMES}
+              selected={countries}
+              onChange={onCountriesChange}
+            />
+          </AccordionPanel>
+        </AccordionItem>
+
+        <AccordionItem value="region">
+          <AccordionTrigger>Región</AccordionTrigger>
+          <AccordionPanel>
+            <FilterGroup
+              values={regionsForCountries}
               selected={departments}
               onChange={onDepartmentsChange}
             />

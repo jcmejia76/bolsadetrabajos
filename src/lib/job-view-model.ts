@@ -16,6 +16,7 @@ export interface JobCardData {
   companyInitials: string;
   companyColor: string;
   location: string;
+  country?: string | null;
   department?: string | null;
   lat?: number | null;
   lng?: number | null;
@@ -53,7 +54,7 @@ function daysSince(date: Date | null): number {
 
 function locationLabel(job: { modalidad: JobModalidad; city: string | null; department: string | null; country: string | null }): string {
   if (job.modalidad === JobModalidad.REMOTO) return "Remoto";
-  return job.city ?? job.department ?? job.country ?? "Guatemala";
+  return job.city ?? job.department ?? job.country ?? "Ubicación no especificada";
 }
 
 function mapCore(job: PublishedJobPosting, favoritedIds?: Set<string>): JobCardData {
@@ -66,6 +67,7 @@ function mapCore(job: PublishedJobPosting, favoritedIds?: Set<string>): JobCardD
     companyInitials: job.company.initials ?? "?",
     companyColor: job.company.color ?? "oklch(0.56 0.17 258)",
     location: locationLabel(job),
+    country: job.country,
     department: job.department,
     lat: job.lat,
     lng: job.lng,
@@ -74,7 +76,7 @@ function mapCore(job: PublishedJobPosting, favoritedIds?: Set<string>): JobCardD
     schedule: JORNADA_LABELS[job.jornada] ?? job.jornada,
     salaryMin: job.salaryVisible ? (job.salaryMin ? Number(job.salaryMin) : null) : null,
     salaryMax: job.salaryVisible ? (job.salaryMax ? Number(job.salaryMax) : null) : null,
-    currency: "GTQ",
+    currency: job.currency,
     category: job.category?.name ?? "Sin categoría",
     categorySlug: job.category?.slug,
     tags: job.keywords,
