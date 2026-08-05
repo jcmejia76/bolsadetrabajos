@@ -11,7 +11,10 @@ const contentSecurityPolicy = [
   "frame-ancestors 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline'",
+  // 'unsafe-eval' only outside production — Turbopack/React dev tooling relies on
+  // eval() for HMR and cross-environment stack reconstruction; React itself
+  // guarantees it never uses eval() in a production build.
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.basemaps.cartocdn.com",
   "font-src 'self' data:",
