@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import Link from "next/link"
 import { BookmarkIcon, BriefcaseIcon, ClockIcon, MapPinIcon, WifiIcon } from "lucide-react"
 
@@ -31,7 +31,7 @@ interface JobListItemProps {
   className?: string
 }
 
-function JobListItem({
+const JobListItem = memo(function JobListItem({
   job,
   isHovered = false,
   isSelected = false,
@@ -163,6 +163,6 @@ function JobListItem({
       </div>
     </div>
   )
-}
+})
 
 export { JobListItem }

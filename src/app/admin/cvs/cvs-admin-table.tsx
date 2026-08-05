@@ -27,7 +27,7 @@ import type { listCvsForAdmin } from "@/services/admin/cv-review.service";
 import { approveCvAction, rejectCvAction, requestCvChangesAction } from "./actions";
 import { ReasonDialog } from "../_components/reason-dialog";
 
-type CvRow = Awaited<ReturnType<typeof listCvsForAdmin>>[number];
+type CvRow = Awaited<ReturnType<typeof listCvsForAdmin>>["cvs"][number];
 
 export function CvsAdminTable({ cvs }: { cvs: CvRow[] }) {
   const router = useRouter();

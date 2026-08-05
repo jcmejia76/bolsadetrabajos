@@ -2,24 +2,36 @@ import { prisma } from "@/lib/prisma";
 import { CVStatus, NotificationType } from "@/generated/prisma/client";
 import { createNotification } from "@/services/notification/notification.service";
 
-export async function listCvsForAdmin(filters: { status?: CVStatus; search?: string } = {}) {
-  return prisma.cV.findMany({
-    where: {
-      ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.search
-        ? {
-            candidate: {
-              OR: [
-                { firstName: { contains: filters.search, mode: "insensitive" } },
-                { lastName: { contains: filters.search, mode: "insensitive" } },
-              ],
-            },
-          }
-        : {}),
-    },
-    include: { candidate: { select: { firstName: true, lastName: true, userId: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listCvsForAdmin(
+  filters: { status?: CVStatus; search?: string } = {},
+  page = 1,
+  pageSize = 25
+) {
+  const where = {
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.search
+      ? {
+          candidate: {
+            OR: [
+              { firstName: { contains: filters.search, mode: "insensitive" as const } },
+              { lastName: { contains: filters.search, mode: "insensitive" as const } },
+            ],
+          },
+        }
+      : {}),
+  };
+  const [cvs, total] = await Promise.all([
+    prisma.cV.findMany({
+      where,
+      include: { candidate: { select: { firstName: true, lastName: true, userId: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.cV.count({ where }),
+  ]);
+
+  return { cvs, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
 export async function getCvForAdmin(cvId: string) {
