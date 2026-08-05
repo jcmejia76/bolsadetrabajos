@@ -11,6 +11,8 @@ import {
 import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
+import { listRecentNotifications, countUnreadNotifications } from "@/services/notification/notification.service";
 
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/admin", label: "Panel", icon: <LayoutDashboardIcon className="size-4" />, exact: true },
@@ -26,11 +28,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await requireRole(Role.ADMINISTRADOR);
   await enforceStaffActiveOrRedirect(session.user.id);
 
+  const [notifications, unreadCount] = await Promise.all([
+    listRecentNotifications(session.user.id),
+    countUnreadNotifications(session.user.id),
+  ]);
+
   return (
     <SidebarShell
       navItems={NAV_ITEMS}
       panelLabel="Panel de Administrador"
       userLabel={session.user.email ?? undefined}
+      notificationsSlot={<NotificationsBell notifications={notifications} unreadCount={unreadCount} />}
     >
       {children}
     </SidebarShell>
