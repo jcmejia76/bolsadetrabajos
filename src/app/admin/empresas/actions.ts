@@ -2,14 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth-utils";
-import { actionOk, actionError, type ActionResult } from "@/lib/action-result";
+import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import { reasonSchema } from "@/validations/review-reason.schema";
 import { companyProfileSchema } from "@/validations/company.schema";
 import * as companyService from "@/services/company/company.service";
-
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
-}
+import { logAudit } from "@/services/audit/audit.service";
+import { getRequestMeta } from "@/lib/request-meta";
 
 function revalidateCompanies(companyId?: string) {
   revalidatePath("/admin/empresas");
@@ -21,6 +19,15 @@ export async function approveCompanyAction(companyId: string): Promise<ActionRes
   try {
     const { userId } = await requireAdminSession();
     await companyService.approveCompany(companyId, userId);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "APPROVE_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies(companyId);
     return actionOk(null);
   } catch (e) {
@@ -38,6 +45,16 @@ export async function rejectCompanyAction(
     if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Datos inválidos");
 
     await companyService.rejectCompany(companyId, userId, parsed.data.reason);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "REJECT_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      after: { reason: parsed.data.reason },
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies(companyId);
     return actionOk(null);
   } catch (e) {
@@ -55,6 +72,16 @@ export async function suspendCompanyAction(
     if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Datos inválidos");
 
     await companyService.suspendCompany(companyId, userId, parsed.data.reason);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "SUSPEND_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      after: { reason: parsed.data.reason },
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies(companyId);
     return actionOk(null);
   } catch (e) {
@@ -66,6 +93,15 @@ export async function reactivateCompanyAction(companyId: string): Promise<Action
   try {
     const { userId } = await requireAdminSession();
     await companyService.reactivateCompany(companyId, userId);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "REACTIVATE_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies(companyId);
     return actionOk(null);
   } catch (e) {
@@ -78,11 +114,20 @@ export async function updateCompanyAction(
   input: unknown
 ): Promise<ActionResult<null>> {
   try {
-    await requireAdminSession();
+    const { userId } = await requireAdminSession();
     const parsed = companyProfileSchema.safeParse(input);
     if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Datos inválidos");
 
     await companyService.updateCompany(companyId, parsed.data);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "UPDATE_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies(companyId);
     return actionOk(null);
   } catch (e) {
@@ -92,8 +137,17 @@ export async function updateCompanyAction(
 
 export async function deleteCompanyAction(companyId: string): Promise<ActionResult<null>> {
   try {
-    await requireAdminSession();
+    const { userId } = await requireAdminSession();
     await companyService.deleteCompany(companyId);
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "DELETE_COMPANY",
+      entityType: "Company",
+      entityId: companyId,
+      ipAddress,
+      userAgent,
+    });
     revalidateCompanies();
     return actionOk(null);
   } catch (e) {

@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Role, StaffScope, StaffStatus, type Permission } from "@/generated/prisma/enums";
+import { logAudit } from "@/services/audit/audit.service";
+import { getRequestMeta } from "@/lib/request-meta";
 
 export async function getSessionOrRedirect() {
   const session = await auth();
@@ -133,6 +135,16 @@ export async function enforceStaffActiveOrRedirect(userId: string) {
     staffMember &&
     (staffMember.status === StaffStatus.SUSPENDIDO || staffMember.status === StaffStatus.ELIMINADO)
   ) {
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "FORCED_LOGOUT_STAFF_INACTIVE",
+      entityType: "User",
+      entityId: userId,
+      after: { staffStatus: staffMember.status },
+      ipAddress,
+      userAgent,
+    });
     await signOut({ redirectTo: "/login" });
   }
 }
