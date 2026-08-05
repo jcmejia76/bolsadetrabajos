@@ -1,16 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireCompanySession } from "@/lib/auth-utils";
+import { requireCompanyPermission } from "@/lib/auth-utils";
 import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import { companyProfileSchema } from "@/validations/company.schema";
 import * as companyService from "@/services/company/company.service";
 import { logAudit } from "@/services/audit/audit.service";
 import { getRequestMeta } from "@/lib/request-meta";
+import { Permission } from "@/generated/prisma/enums";
 
 export async function updateOwnCompanyAction(input: unknown): Promise<ActionResult<null>> {
   try {
-    const { userId, companyId } = await requireCompanySession();
+    const { userId, companyId } = await requireCompanyPermission(Permission.EMPRESA_PERFIL_EDITAR);
     const parsed = companyProfileSchema.safeParse(input);
     if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Datos inválidos");
 
