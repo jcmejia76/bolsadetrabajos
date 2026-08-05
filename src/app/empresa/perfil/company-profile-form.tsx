@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { companyProfileSchema, type CompanyProfileInput } from "@/validations/company.schema";
+import { COUNTRIES } from "@/lib/geo";
 import { updateOwnCompanyAction } from "./actions";
+
+const COUNTRY_NAMES = COUNTRIES.map((c) => c.name).sort();
 
 interface CompanyProfileFormProps {
   defaultValues: CompanyProfileInput;
@@ -159,9 +163,20 @@ export function CompanyProfileForm({ defaultValues }: CompanyProfileFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>País</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
+                  <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona un país" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {COUNTRY_NAMES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

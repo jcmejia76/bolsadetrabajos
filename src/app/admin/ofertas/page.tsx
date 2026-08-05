@@ -28,10 +28,15 @@ export default async function AdminOfertasPage({
       : JobStatus.PENDIENTE_APROBACION;
   const currentPage = Math.max(1, Number(page) || 1);
 
-  const { jobPostings, totalPages } = await listJobPostingsForAdmin(
+  const { jobPostings: rawJobPostings, totalPages } = await listJobPostingsForAdmin(
     { status: activeStatus },
     currentPage
   );
+  const jobPostings = rawJobPostings.map((job) => ({
+    ...job,
+    salaryMin: job.salaryMin ? Number(job.salaryMin) : null,
+    salaryMax: job.salaryMax ? Number(job.salaryMax) : null,
+  }));
 
   const statusQuery = activeStatus ? `status=${activeStatus}` : hasStatusParam ? "status=all" : "";
 

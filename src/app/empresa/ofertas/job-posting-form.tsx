@@ -16,7 +16,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { KeywordInput } from "./keyword-input";
 import { RequiredLanguagesField } from "./required-languages-field";
 import { jobPostingSchema, type JobPostingFormValues } from "@/validations/job-posting.schema";
-import { GEO_CITIES } from "@/lib/geo";
+import { GEO_CITIES, COUNTRIES } from "@/lib/geo";
 import { JobModalidad, JobJornada, ExperienceLevel, AcademicLevel } from "@/generated/prisma/enums";
 import {
   MODALIDAD_LABELS,
@@ -29,7 +29,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { createJobPostingAction, updateJobPostingAction } from "./actions";
 
 const NONE_VALUE = "__none__";
-const DEPARTMENTS = [...new Set(GEO_CITIES.map((c) => c.department))].sort();
+const COUNTRY_NAMES = COUNTRIES.map((c) => c.name).sort();
 
 interface JobPostingFormProps {
   categories: JobCategory[];
@@ -99,8 +99,14 @@ export function JobPostingForm({
     },
   });
 
+  const countryValue = form.watch("country");
   const departmentValue = form.watch("department");
-  const citiesForDepartment = GEO_CITIES.filter((c) => c.department === departmentValue);
+  const departmentsForCountry = [
+    ...new Set(GEO_CITIES.filter((c) => c.country === countryValue).map((c) => c.department)),
+  ].sort();
+  const citiesForDepartment = GEO_CITIES.filter(
+    (c) => c.country === countryValue && c.department === departmentValue
+  );
 
   function onSubmit(values: JobPostingFormValues) {
     setFormError(null);
@@ -238,24 +244,22 @@ export function JobPostingForm({
 
             <FormField
               control={form.control}
-              name="department"
+              name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Departamento</FormLabel>
+                  <FormLabel>País</FormLabel>
                   <Select
                     value={field.value || NONE_VALUE}
                     onValueChange={(v) => {
-                      const department = v === NONE_VALUE ? "" : v;
-                      field.onChange(department);
-                      form.setValue(
-                        "city",
-                        GEO_CITIES.find((c) => c.department === department)?.city ?? ""
-                      );
+                      const country = v === NONE_VALUE ? "" : v;
+                      field.onChange(country);
+                      form.setValue("department", "");
+                      form.setValue("city", "");
                     }}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona un departamento">
+                        <SelectValue placeholder="Selecciona un país">
                           {(value: string) =>
                             value === NONE_VALUE ? "Remoto / sin especificar" : value
                           }
@@ -264,7 +268,43 @@ export function JobPostingForm({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value={NONE_VALUE}>Remoto / sin especificar</SelectItem>
-                      {DEPARTMENTS.map((department) => (
+                      {COUNTRY_NAMES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Región (estado/provincia/departamento)</FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(v) => {
+                      field.onChange(v);
+                      form.setValue("city", "");
+                    }}
+                    disabled={!countryValue}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={
+                            countryValue ? "Selecciona una región" : "Selecciona primero un país"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {departmentsForCountry.map((department) => (
                         <SelectItem key={department} value={department}>
                           {department}
                         </SelectItem>
@@ -291,9 +331,7 @@ export function JobPostingForm({
                       <SelectTrigger className="w-full">
                         <SelectValue
                           placeholder={
-                            departmentValue
-                              ? "Selecciona una ciudad"
-                              : "Selecciona primero un departamento"
+                            departmentValue ? "Selecciona una ciudad" : "Selecciona primero una región"
                           }
                         />
                       </SelectTrigger>
@@ -306,20 +344,6 @@ export function JobPostingForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>País</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ""} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
