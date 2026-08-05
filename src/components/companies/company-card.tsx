@@ -3,10 +3,10 @@ import { BadgeCheckIcon, BriefcaseIcon, MapPinIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import type { MockCompany } from "@/lib/mock/companies"
+import type { CompanyCardData } from "@/lib/company-view-model"
 
 interface CompanyCardProps {
-  company: MockCompany
+  company: CompanyCardData
   className?: string
 }
 

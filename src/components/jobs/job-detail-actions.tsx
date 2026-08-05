@@ -1,24 +1,48 @@
 "use client"
 
-import { useState } from "react"
-import { BookmarkIcon, SendIcon } from "lucide-react"
+import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import { BookmarkIcon, CheckIcon, SendIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { applyToJobAction } from "@/app/(marketing)/empleos/[slug]/actions"
 
 interface JobDetailActionsProps {
+  jobPostingId: string
+  jobSlug: string
   jobTitle: string
+  hasApplied: boolean
   className?: string
   fullWidth?: boolean
 }
 
 function JobDetailActions({
+  jobPostingId,
+  jobSlug,
   jobTitle,
+  hasApplied,
   className,
   fullWidth,
 }: JobDetailActionsProps) {
+  const router = useRouter()
   const [saved, setSaved] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function handleApply() {
+    startTransition(async () => {
+      const result = await applyToJobAction(jobPostingId, jobSlug)
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
+      toast.success("¡Postulación enviada!", {
+        description: `Tu postulación a "${jobTitle}" fue enviada correctamente.`,
+      })
+      router.refresh()
+    })
+  }
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -26,14 +50,11 @@ function JobDetailActions({
         type="button"
         size="lg"
         className={cn("gap-2", fullWidth && "flex-1")}
-        onClick={() =>
-          toast.success("¡Función en camino!", {
-            description: `Pronto podrás aplicar a "${jobTitle}" directamente desde aquí.`,
-          })
-        }
+        onClick={handleApply}
+        disabled={hasApplied || isPending}
       >
-        <SendIcon />
-        Aplicar ahora
+        {hasApplied ? <CheckIcon /> : <SendIcon />}
+        {hasApplied ? "Ya te postulaste" : isPending ? "Enviando..." : "Aplicar ahora"}
       </Button>
       <Button
         type="button"

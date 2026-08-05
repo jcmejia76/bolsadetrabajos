@@ -6,9 +6,10 @@ export interface GeoCity {
 }
 
 /**
- * Approximate coordinates for the municipal seat of each city, used to plot
- * job markers on the map. Swap for a real geocoding service once job
- * postings carry their own coordinates from the API.
+ * Approximate coordinates for the municipal seat of each city, used both to
+ * plot job markers on the map and to backfill JobPosting.lat/lng at
+ * save time from its city/department. Swap for a real geocoding service if
+ * precision beyond "which city" is ever needed.
  */
 export const GEO_CITIES: GeoCity[] = [
   { city: "Ciudad de Guatemala", department: "Guatemala", lat: 14.6349, lng: -90.5069 },
@@ -25,6 +26,22 @@ export const GEO_CITIES: GeoCity[] = [
 
 export function findGeoCity(city: string): GeoCity | undefined {
   return GEO_CITIES.find((entry) => entry.city === city)
+}
+
+/** Best-effort city/department match, falling back to the department's most common seat. */
+export function deriveJobCoordinates(
+  city?: string | null,
+  department?: string | null
+): { lat: number; lng: number } | null {
+  if (city) {
+    const byCity = GEO_CITIES.find((entry) => entry.city === city)
+    if (byCity) return { lat: byCity.lat, lng: byCity.lng }
+  }
+  if (department) {
+    const byDepartment = GEO_CITIES.find((entry) => entry.department === department)
+    if (byDepartment) return { lat: byDepartment.lat, lng: byDepartment.lng }
+  }
+  return null
 }
 
 export interface LatLng {

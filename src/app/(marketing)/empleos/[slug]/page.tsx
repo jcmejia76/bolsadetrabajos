@@ -13,6 +13,8 @@ import {
   WalletIcon,
 } from "lucide-react"
 
+import { auth } from "@/auth"
+import { Role } from "@/generated/prisma/enums"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -26,11 +28,19 @@ import { Button } from "@/components/ui/button"
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
 import { JobCard } from "@/components/jobs/job-card"
 import { JobDetailActions } from "@/components/jobs/job-detail-actions"
-import { mockJobs } from "@/lib/mock/jobs"
-import { mockCompanies } from "@/lib/mock/companies"
+import {
+  getPublishedJobPostingBySlug,
+  listSimilarPublishedJobPostings,
+} from "@/services/job-posting/job-posting-public.service"
+import { hasCandidateApplied } from "@/services/application/application.service"
+import { mapJobPostingDetailToCardData, mapJobPostingToCardData } from "@/lib/job-view-model"
 
-function formatSalaryFull(min: number, max: number, currency: string) {
-  return `${currency} ${min.toLocaleString("es")} - ${max.toLocaleString("es")}`
+function formatSalaryFull(min: number | null, max: number | null, currency: string) {
+  if (min == null && max == null) return "A convenir"
+  if (min != null && max != null) {
+    return `${currency} ${min.toLocaleString("es")} - ${max.toLocaleString("es")}`
+  }
+  return `${currency} ${(min ?? max)!.toLocaleString("es")}`
 }
 
 function formatRelativeDays(days: number) {
@@ -45,8 +55,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const job = mockJobs.find((j) => j.slug === slug)
-  return { title: job ? `${job.title} en ${job.companyName}` : "Empleo no encontrado" }
+  const job = await getPublishedJobPostingBySlug(slug)
+  return { title: job ? `${job.title} en ${job.company.name}` : "Empleo no encontrado" }
 }
 
 export default async function JobDetailPage({
@@ -55,16 +65,24 @@ export default async function JobDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const job = mockJobs.find((j) => j.slug === slug)
+  const jobPosting = await getPublishedJobPostingBySlug(slug)
 
-  if (!job) {
+  if (!jobPosting) {
     notFound()
   }
 
-  const company = mockCompanies.find((c) => c.slug === job.companySlug)
-  const similarJobs = mockJobs
-    .filter((j) => j.category === job.category && j.id !== job.id)
-    .slice(0, 3)
+  const [session, similar] = await Promise.all([
+    auth(),
+    listSimilarPublishedJobPostings(jobPosting.categoryId, jobPosting.id),
+  ])
+
+  const hasApplied =
+    session?.user?.role === Role.CANDIDATO && session.user.candidateId
+      ? await hasCandidateApplied(session.user.candidateId, jobPosting.id)
+      : false
+
+  const job = mapJobPostingDetailToCardData(jobPosting)
+  const similarJobs = similar.map(mapJobPostingToCardData)
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -130,7 +148,13 @@ export default async function JobDetailPage({
             </div>
           </div>
 
-          <JobDetailActions jobTitle={job.title} className="sm:flex-col-reverse sm:items-stretch" />
+          <JobDetailActions
+            jobPostingId={jobPosting.id}
+            jobSlug={jobPosting.slug}
+            jobTitle={job.title}
+            hasApplied={hasApplied}
+            className="sm:flex-col-reverse sm:items-stretch"
+          />
         </div>
       </Reveal>
 
@@ -141,58 +165,64 @@ export default async function JobDetailPage({
               <h2 className="mb-3 text-lg font-semibold text-foreground">
                 Descripción del puesto
               </h2>
-              <p className="leading-relaxed text-muted-foreground">
+              <p className="leading-relaxed whitespace-pre-line text-muted-foreground">
                 {job.description}
               </p>
             </section>
           </Reveal>
 
-          <Reveal delay={0.05}>
-            <section>
-              <h2 className="mb-3 text-lg font-semibold text-foreground">
-                Responsabilidades
-              </h2>
-              <ul className="flex flex-col gap-2.5">
-                {job.responsibilities.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                    <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </Reveal>
+          {job.responsibilities.length > 0 && (
+            <Reveal delay={0.05}>
+              <section>
+                <h2 className="mb-3 text-lg font-semibold text-foreground">
+                  Responsabilidades
+                </h2>
+                <ul className="flex flex-col gap-2.5">
+                  {job.responsibilities.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                      <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </Reveal>
+          )}
 
-          <Reveal delay={0.1}>
-            <section>
-              <h2 className="mb-3 text-lg font-semibold text-foreground">
-                Requisitos
-              </h2>
-              <ul className="flex flex-col gap-2.5">
-                {job.requirements.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                    <GraduationCapIcon className="mt-0.5 size-4 shrink-0 text-primary" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </Reveal>
+          {job.requirements.length > 0 && (
+            <Reveal delay={0.1}>
+              <section>
+                <h2 className="mb-3 text-lg font-semibold text-foreground">
+                  Requisitos
+                </h2>
+                <ul className="flex flex-col gap-2.5">
+                  {job.requirements.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                      <GraduationCapIcon className="mt-0.5 size-4 shrink-0 text-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </Reveal>
+          )}
 
-          <Reveal delay={0.15}>
-            <section>
-              <h2 className="mb-3 text-lg font-semibold text-foreground">
-                Beneficios
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {job.benefits.map((benefit) => (
-                  <Badge key={benefit} variant="secondary" className="h-7 rounded-full px-3 text-[13px]">
-                    {benefit}
-                  </Badge>
-                ))}
-              </div>
-            </section>
-          </Reveal>
+          {job.benefits.length > 0 && (
+            <Reveal delay={0.15}>
+              <section>
+                <h2 className="mb-3 text-lg font-semibold text-foreground">
+                  Beneficios
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {job.benefits.map((benefit) => (
+                    <Badge key={benefit} variant="secondary" className="h-7 rounded-full px-3 text-[13px]">
+                      {benefit}
+                    </Badge>
+                  ))}
+                </div>
+              </section>
+            </Reveal>
+          )}
         </div>
 
         <div className="flex flex-col gap-5">
@@ -239,42 +269,35 @@ export default async function JobDetailPage({
               </dl>
             </div>
 
-            {company && (
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
-                    style={{ backgroundColor: company.color }}
-                  >
-                    {company.initials}
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-foreground">
-                        {company.name}
-                      </span>
-                      {company.verified && (
-                        <BadgeCheckIcon className="size-4 text-primary" />
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {company.industry}
-                    </span>
-                  </div>
-                </div>
-                <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
-                  {company.description}
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4 w-full"
-                  render={<Link href={`/empresas/${company.slug}`} />}
-                  nativeButton={false}
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
+                  style={{ backgroundColor: job.companyColor }}
                 >
-                  Ver perfil de empresa
-                </Button>
+                  {job.companyInitials}
+                </span>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-foreground">
+                      {job.companyName}
+                    </span>
+                    <BadgeCheckIcon className="size-4 text-primary" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {job.category}
+                  </span>
+                </div>
               </div>
-            )}
+              <Button
+                variant="outline"
+                className="mt-4 w-full"
+                render={<Link href={`/empresas/${job.companySlug}`} />}
+                nativeButton={false}
+              >
+                Ver perfil de empresa
+              </Button>
+            </div>
           </Reveal>
         </div>
       </div>

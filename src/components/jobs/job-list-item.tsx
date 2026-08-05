@@ -7,8 +7,8 @@ import { BookmarkIcon, BriefcaseIcon, ClockIcon, MapPinIcon, WifiIcon } from "lu
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import type { MockJob } from "@/lib/mock/jobs"
-import { formatDistance } from "@/lib/mock/geo"
+import type { JobCardData } from "@/lib/job-view-model"
+import { formatDistance } from "@/lib/geo"
 
 function formatRelativeDays(days: number) {
   if (days <= 0) return "Hoy"
@@ -16,13 +16,17 @@ function formatRelativeDays(days: number) {
   return `Hace ${days} días`
 }
 
-function formatSalary(job: MockJob) {
+function formatSalary(job: JobCardData) {
+  if (job.salaryMin == null && job.salaryMax == null) return "A convenir"
   const format = (n: number) => `${(n / 1000).toFixed(0)}k`
-  return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  if (job.salaryMin != null && job.salaryMax != null) {
+    return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  }
+  return `${job.currency} ${format((job.salaryMin ?? job.salaryMax)!)}`
 }
 
 interface JobListItemProps {
-  job: MockJob
+  job: JobCardData
   isHovered?: boolean
   isSelected?: boolean
   onHover?: (id: string | null) => void

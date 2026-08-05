@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { generateSlugCandidate } from "@/lib/slug";
+import { deriveCompanyBranding } from "@/lib/company-branding";
 import { Role, CompanyStatus, Prisma } from "@/generated/prisma/client";
 
 const MAX_SLUG_ATTEMPTS = 3;
@@ -46,6 +47,8 @@ export async function registerCandidate(input: {
 export async function registerCompany(input: { email: string; password: string; name: string }) {
   const passwordHash = await hashPassword(input.password);
 
+  const { color, initials } = deriveCompanyBranding(input.name);
+
   for (let attempt = 0; attempt < MAX_SLUG_ATTEMPTS; attempt++) {
     try {
       return await prisma.user.create({
@@ -59,6 +62,8 @@ export async function registerCompany(input: { email: string; password: string; 
               slug: generateSlugCandidate(input.name),
               email: input.email,
               status: CompanyStatus.PENDIENTE,
+              color,
+              initials,
             },
           },
         },

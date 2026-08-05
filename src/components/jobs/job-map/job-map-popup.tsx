@@ -1,8 +1,12 @@
-import type { MockJob } from "@/lib/mock/jobs"
+import type { JobCardData } from "@/lib/job-view-model"
 
-function formatSalary(job: MockJob) {
+function formatSalary(job: JobCardData) {
+  if (job.salaryMin == null && job.salaryMax == null) return "A convenir"
   const format = (n: number) => `${(n / 1000).toFixed(0)}k`
-  return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  if (job.salaryMin != null && job.salaryMax != null) {
+    return `${job.currency} ${format(job.salaryMin)} - ${format(job.salaryMax)}`
+  }
+  return `${job.currency} ${format((job.salaryMin ?? job.salaryMax)!)}`
 }
 
 /**
@@ -10,7 +14,7 @@ function formatSalary(job: MockJob) {
  * free of interactivity (no onClick handlers survive the static render, the
  * "Ver detalles" link works as a plain anchor).
  */
-function JobMapPopupContent({ job }: { job: MockJob }) {
+function JobMapPopupContent({ job }: { job: JobCardData }) {
   return (
     <div className="flex w-64 flex-col gap-3 p-3.5 pr-7">
       <div className="flex items-start gap-3">

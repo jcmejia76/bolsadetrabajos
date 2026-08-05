@@ -3,11 +3,18 @@ import { ArrowRightIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
+import { EmptyState } from "@/components/ui/empty-state"
 import { JobCard } from "@/components/jobs/job-card"
-import { mockJobs } from "@/lib/mock/jobs"
+import { BriefcaseIcon } from "lucide-react"
+import { listPublishedJobPostings } from "@/services/job-posting/job-posting-public.service"
+import { mapJobPostingToCardData } from "@/lib/job-view-model"
 
-function FeaturedJobs() {
-  const featured = mockJobs.filter((job) => job.featured).slice(0, 6)
+async function FeaturedJobs() {
+  const jobPostings = await listPublishedJobPostings()
+  const featuredPostings = jobPostings.filter((job) => job.isFeatured)
+  // Falls back to the most recent published jobs once there's no curated "featured" pick yet.
+  const picks = (featuredPostings.length > 0 ? featuredPostings : jobPostings).slice(0, 6)
+  const featured = picks.map(mapJobPostingToCardData)
 
   return (
     <section className="bg-muted/30 py-20">
@@ -33,13 +40,21 @@ function FeaturedJobs() {
           </Button>
         </Reveal>
 
-        <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((job) => (
-            <StaggerItem key={job.id}>
-              <JobCard job={job} />
-            </StaggerItem>
-          ))}
-        </Stagger>
+        {featured.length === 0 ? (
+          <EmptyState
+            icon={<BriefcaseIcon />}
+            title="Aún no hay vacantes publicadas"
+            description="Vuelve pronto — las empresas están preparando sus primeras ofertas."
+          />
+        ) : (
+          <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((job) => (
+              <StaggerItem key={job.id}>
+                <JobCard job={job} />
+              </StaggerItem>
+            ))}
+          </Stagger>
+        )}
       </div>
     </section>
   )

@@ -9,7 +9,7 @@ import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
 import { useTheme } from "next-themes"
 
-import type { MockJob } from "@/lib/mock/jobs"
+import type { JobCardData } from "@/lib/job-view-model"
 import { MarkerClusterGroup } from "./marker-cluster-group"
 
 const LIGHT_TILE_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -62,7 +62,7 @@ function MapController({ userLocation, onBoundsChange }: MapControllerProps) {
 }
 
 interface LeafletMapProps {
-  jobs: MockJob[]
+  jobs: JobCardData[]
   hoveredJobId: string | null
   selectedJobId: string | null
   onMarkerHover: (id: string | null) => void

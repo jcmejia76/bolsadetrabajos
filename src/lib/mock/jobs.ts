@@ -1,4 +1,4 @@
-import { findGeoCity, GEO_CITIES } from "./geo"
+import { findGeoCity, GEO_CITIES } from "@/lib/geo"
 import { mockCompanies } from "./companies"
 
 export type JobModality = "Remoto" | "Presencial" | "Híbrido"
