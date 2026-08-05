@@ -85,7 +85,7 @@ export function CandidateProfileForm({ email, photoUrl, defaultValues }: Candida
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel required>Nombre</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -98,7 +98,7 @@ export function CandidateProfileForm({ email, photoUrl, defaultValues }: Candida
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Apellidos</FormLabel>
+                  <FormLabel required>Apellidos</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>

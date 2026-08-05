@@ -131,7 +131,7 @@ export function JobPostingForm({
               name="title"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Título del puesto</FormLabel>
+                  <FormLabel required>Título del puesto</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -145,7 +145,7 @@ export function JobPostingForm({
               name="categoryId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoría</FormLabel>
+                  <FormLabel required>Categoría</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -186,7 +186,7 @@ export function JobPostingForm({
               name="modalidad"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Modalidad</FormLabel>
+                  <FormLabel required>Modalidad</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -211,7 +211,7 @@ export function JobPostingForm({
               name="jornada"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Jornada</FormLabel>
+                  <FormLabel required>Jornada</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -382,7 +382,7 @@ export function JobPostingForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción detallada</FormLabel>
+                  <FormLabel required>Descripción detallada</FormLabel>
                   <FormControl>
                     <Textarea rows={5} {...field} />
                   </FormControl>

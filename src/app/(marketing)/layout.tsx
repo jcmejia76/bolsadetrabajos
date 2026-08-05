@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { Role } from "@/generated/prisma/enums"
 import { Navbar } from "@/components/marketing/navbar"
 import { Footer } from "@/components/marketing/footer"
+import { SkipLink } from "@/components/ui/skip-link"
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen"
 import { getMaintenanceState } from "@/services/settings/site-settings.service"
 
@@ -56,8 +57,9 @@ export default async function MarketingLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
+      <SkipLink />
       <Navbar user={user} />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </div>
   )

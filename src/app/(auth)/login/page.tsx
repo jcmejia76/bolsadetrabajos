@@ -5,7 +5,7 @@ import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
   return (
-    <main className="relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden bg-grid-fade p-8">
+    <main id="main-content" className="relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden bg-grid-fade p-8">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 size-[28rem] -translate-x-1/2 rounded-full bg-primary/15 blur-[110px]"
