@@ -5,6 +5,8 @@ import { Role } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen";
 import { getMaintenanceState } from "@/services/settings/site-settings.service";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
+import { listRecentNotifications, countUnreadNotifications } from "@/services/notification/notification.service";
 
 const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/candidato", label: "Resumen", icon: <LayoutDashboardIcon className="size-4" />, exact: true },
@@ -20,11 +22,17 @@ export default async function CandidatoLayout({ children }: { children: React.Re
   const { maintenanceMode, maintenanceMessage } = await getMaintenanceState();
   if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />;
 
+  const [notifications, unreadCount] = await Promise.all([
+    listRecentNotifications(session.user.id),
+    countUnreadNotifications(session.user.id),
+  ]);
+
   return (
     <SidebarShell
       navItems={NAV_ITEMS}
       panelLabel="Panel de Candidato"
       userLabel={session.user.email ?? undefined}
+      notificationsSlot={<NotificationsBell notifications={notifications} unreadCount={unreadCount} />}
     >
       {children}
     </SidebarShell>
