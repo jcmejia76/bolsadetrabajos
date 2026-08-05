@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { signOutAction } from "@/lib/actions/sign-out"
+import { SkipLink } from "@/components/ui/skip-link"
 
 export interface DashboardNavItem {
   href: string
@@ -107,6 +108,7 @@ function SidebarShell({
 
   return (
     <div className="flex min-h-screen bg-muted/30">
+      <SkipLink />
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card px-4 py-5 lg:flex">
         <div className="mb-6 px-1">
           <Brand />
@@ -161,7 +163,7 @@ function SidebarShell({
           </span>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main id="main-content" className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   )

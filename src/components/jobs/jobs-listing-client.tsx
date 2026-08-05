@@ -148,6 +148,18 @@ function JobsListingClient({
     userLocation,
   ])
 
+  // Computed once per relevant change instead of per-row-per-render (JobListItem is memoized).
+  const distanceById = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!userLocation) return map
+    for (const job of filteredJobs) {
+      if (job.lat != null && job.lng != null) {
+        map.set(job.id, haversineDistanceKm(userLocation, { lat: job.lat, lng: job.lng }))
+      }
+    }
+    return map
+  }, [filteredJobs, userLocation])
+
   const visibleJobs = filteredJobs.slice(0, visibleCount)
   const hasMore = visibleCount < filteredJobs.length
 
@@ -384,11 +396,7 @@ function JobsListingClient({
                     isSelected={job.id === selectedJobId}
                     onHover={setHoveredJobId}
                     onSelect={setSelectedJobId}
-                    distanceKm={
-                      userLocation && job.lat != null && job.lng != null
-                        ? haversineDistanceKm(userLocation, { lat: job.lat, lng: job.lng })
-                        : undefined
-                    }
+                    distanceKm={distanceById.get(job.id)}
                   />
                 ))}
                 {hasMore && <div ref={sentinelRef} className="h-1" />}

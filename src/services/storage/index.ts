@@ -1,7 +1,7 @@
-import type { StorageService } from "./storage-service";
+import type { StorageService } from "./storage.service";
 import { LocalStorageService } from "./local-storage.service";
 
-export type { StorageFolder, StorageService, UploadInput, UploadResult } from "./storage-service";
+export type { StorageFolder, StorageService, UploadInput, UploadResult } from "./storage.service";
 export { validateFile } from "./file-validation";
 
 export function getStorageService(): StorageService {

@@ -29,7 +29,7 @@ import { approveCompanyAction, rejectCompanyAction, suspendCompanyAction } from 
 import { ReasonDialog } from "../_components/reason-dialog";
 import { DeleteCompanyDialog } from "./delete-company-dialog";
 
-type CompanyRow = Awaited<ReturnType<typeof listCompanies>>[number];
+type CompanyRow = Awaited<ReturnType<typeof listCompanies>>["companies"][number];
 
 export function CompaniesTable({ companies }: { companies: CompanyRow[] }) {
   const router = useRouter();

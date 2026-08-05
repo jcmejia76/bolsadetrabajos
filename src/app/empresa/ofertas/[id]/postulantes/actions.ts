@@ -2,16 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { requireCompanySession } from "@/lib/auth-utils";
-import { actionOk, actionError, type ActionResult } from "@/lib/action-result";
+import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import {
   updateApplicationStatusSchema,
   applicationNoteSchema,
 } from "@/validations/application.schema";
 import * as applicationService from "@/services/application/application.service";
-
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
-}
 
 export async function updateApplicationStatusAction(
   jobPostingId: string,

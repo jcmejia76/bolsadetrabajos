@@ -25,7 +25,7 @@ import type { listCandidatesForAdmin } from "@/services/admin/candidate-admin.se
 import { suspendCandidateAction, reactivateCandidateAction } from "./actions";
 import { DeleteCandidateDialog } from "./delete-candidate-dialog";
 
-type CandidateRow = Awaited<ReturnType<typeof listCandidatesForAdmin>>[number];
+type CandidateRow = Awaited<ReturnType<typeof listCandidatesForAdmin>>["candidates"][number];
 
 export function CandidatesTable({ candidates }: { candidates: CandidateRow[] }) {
   const router = useRouter();

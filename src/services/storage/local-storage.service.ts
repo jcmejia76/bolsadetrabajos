@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { StorageFolder, StorageService, UploadInput, UploadResult } from "./storage-service";
+import type { StorageFolder, StorageService, UploadInput, UploadResult } from "./storage.service";
 
 const PRIVATE_FOLDERS: readonly StorageFolder[] = ["cvs", "avatars"];
 const LOCAL_ROOT = process.env.STORAGE_LOCAL_ROOT ?? "./storage";

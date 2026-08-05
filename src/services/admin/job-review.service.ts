@@ -4,15 +4,27 @@ import { createNotification } from "@/services/notification/notification.service
 import { toJobPostingData } from "@/services/job-posting/job-posting.service";
 import type { JobPostingInput } from "@/validations/job-posting.schema";
 
-export async function listJobPostingsForAdmin(filters: { status?: JobStatus; search?: string } = {}) {
-  return prisma.jobPosting.findMany({
-    where: {
-      ...(filters.status ? { status: filters.status } : {}),
-      ...(filters.search ? { title: { contains: filters.search, mode: "insensitive" } } : {}),
-    },
-    include: { company: true, category: true, _count: { select: { applications: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listJobPostingsForAdmin(
+  filters: { status?: JobStatus; search?: string } = {},
+  page = 1,
+  pageSize = 25
+) {
+  const where = {
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.search ? { title: { contains: filters.search, mode: "insensitive" as const } } : {}),
+  };
+  const [jobPostings, total] = await Promise.all([
+    prisma.jobPosting.findMany({
+      where,
+      include: { company: true, category: true, _count: { select: { applications: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.jobPosting.count({ where }),
+  ]);
+
+  return { jobPostings, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
 export async function getJobPostingForAdmin(jobPostingId: string) {
