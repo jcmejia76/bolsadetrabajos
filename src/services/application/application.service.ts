@@ -52,6 +52,18 @@ export async function createApplication(
   }
 }
 
+export async function listApplicationsByCandidate(candidateId: string) {
+  return prisma.application.findMany({
+    where: { candidateId },
+    include: {
+      jobPosting: {
+        include: { company: { select: { name: true, slug: true, color: true, initials: true } } },
+      },
+    },
+    orderBy: { appliedAt: "desc" },
+  });
+}
+
 export async function hasCandidateApplied(candidateId: string, jobPostingId: string) {
   const application = await prisma.application.findUnique({
     where: { jobPostingId_candidateId: { jobPostingId, candidateId } },

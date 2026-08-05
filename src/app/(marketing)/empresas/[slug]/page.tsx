@@ -15,7 +15,10 @@ import {
 import { EmptyState } from "@/components/ui/empty-state"
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal"
 import { JobCard } from "@/components/jobs/job-card"
+import { auth } from "@/auth"
+import { Role } from "@/generated/prisma/enums"
 import { getPublishedCompanyBySlug } from "@/services/company/company-public.service"
+import { listFavoriteJobIds } from "@/services/favorite/favorite.service"
 import { mapCompanyDetailToCardData } from "@/lib/company-view-model"
 import { mapJobPostingToCardData } from "@/lib/job-view-model"
 
@@ -43,8 +46,14 @@ export default async function CompanyProfilePage({
     notFound()
   }
 
+  const session = await auth()
+  const favoritedIds =
+    session?.user?.role === Role.CANDIDATO && session.user.candidateId
+      ? await listFavoriteJobIds(session.user.candidateId)
+      : undefined
+
   const company = mapCompanyDetailToCardData(companyRecord)
-  const openJobs = companyRecord.jobPostings.map(mapJobPostingToCardData)
+  const openJobs = companyRecord.jobPostings.map((job) => mapJobPostingToCardData(job, favoritedIds))
   const memberSince = companyRecord.createdAt.getFullYear()
 
   return (

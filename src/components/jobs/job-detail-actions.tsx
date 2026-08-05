@@ -8,12 +8,14 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { applyToJobAction } from "@/app/(marketing)/empleos/[slug]/actions"
+import { toggleFavoriteAction } from "@/lib/actions/favorites"
 
 interface JobDetailActionsProps {
   jobPostingId: string
   jobSlug: string
   jobTitle: string
   hasApplied: boolean
+  initialSaved?: boolean
   className?: string
   fullWidth?: boolean
 }
@@ -23,12 +25,28 @@ function JobDetailActions({
   jobSlug,
   jobTitle,
   hasApplied,
+  initialSaved = false,
   className,
   fullWidth,
 }: JobDetailActionsProps) {
   const router = useRouter()
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(initialSaved)
   const [isPending, startTransition] = useTransition()
+  const [isSavePending, startSaveTransition] = useTransition()
+
+  function handleToggleSave() {
+    const next = !saved
+    setSaved(next)
+    startSaveTransition(async () => {
+      const result = await toggleFavoriteAction(jobPostingId)
+      if (!result.success) {
+        setSaved(!next)
+        toast.error(result.error)
+        return
+      }
+      toast(result.data.favorited ? "Empleo guardado" : "Empleo removido de guardados")
+    })
+  }
 
   function handleApply() {
     startTransition(async () => {
@@ -62,10 +80,8 @@ function JobDetailActions({
         size="lg"
         aria-pressed={saved}
         aria-label={saved ? "Quitar de guardados" : "Guardar empleo"}
-        onClick={() => {
-          setSaved((v) => !v)
-          toast(saved ? "Empleo removido de guardados" : "Empleo guardado")
-        }}
+        onClick={handleToggleSave}
+        disabled={isSavePending}
         className={cn(saved && "border-primary/40 text-primary")}
       >
         <BookmarkIcon className={cn(saved && "fill-current")} />
