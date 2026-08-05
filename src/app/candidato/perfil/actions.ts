@@ -2,13 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { requireCandidateSession } from "@/lib/auth-utils";
-import { actionOk, actionError, type ActionResult } from "@/lib/action-result";
+import { actionOk, actionError, errorMessage, type ActionResult } from "@/lib/action-result";
 import { candidateProfileSchema } from "@/validations/candidate.schema";
 import * as candidateService from "@/services/candidate/candidate.service";
-
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : "Ocurrió un error inesperado";
-}
 
 function revalidateCandidato() {
   revalidatePath("/candidato/perfil");

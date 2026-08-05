@@ -22,20 +22,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CVStatus } from "@/generated/prisma/enums";
-import { CV_STATUS_LABELS, CV_SOURCE_LABELS } from "@/lib/candidate-labels";
+import { CV_STATUS_LABELS, CV_SOURCE_LABELS, CV_STATUS_VARIANTS } from "@/lib/candidate-labels";
 import type { listCvsByCandidate } from "@/services/cv/cv.service";
 import { setPrimaryCvAction } from "./actions";
 import { DeleteCvDialog } from "./delete-cv-dialog";
 
 type CvRow = Awaited<ReturnType<typeof listCvsByCandidate>>[number];
-
-const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  [CVStatus.PENDIENTE]: "outline",
-  [CVStatus.APROBADO]: "default",
-  [CVStatus.RECHAZADO]: "destructive",
-  [CVStatus.CAMBIOS_SOLICITADOS]: "secondary",
-};
 
 export function CvTable({ cvs }: { cvs: CvRow[] }) {
   const router = useRouter();
@@ -85,7 +77,7 @@ export function CvTable({ cvs }: { cvs: CvRow[] }) {
               <TableCell className="px-4 py-3 text-muted-foreground">{CV_SOURCE_LABELS[cv.sourceType]}</TableCell>
               <TableCell className="px-4 py-3 text-muted-foreground">v{cv.version}</TableCell>
               <TableCell className="px-4 py-3">
-                <Badge variant={STATUS_VARIANTS[cv.status]}>{CV_STATUS_LABELS[cv.status]}</Badge>
+                <Badge variant={CV_STATUS_VARIANTS[cv.status]}>{CV_STATUS_LABELS[cv.status]}</Badge>
               </TableCell>
               <TableCell className="px-4 py-3">{cv.isPrimary ? <Badge>Principal</Badge> : "—"}</TableCell>
               <TableCell className="px-4 py-3 text-right">

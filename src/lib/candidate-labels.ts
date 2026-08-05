@@ -17,6 +17,13 @@ export const CV_STATUS_LABELS: Record<string, string> = {
   [CVStatus.CAMBIOS_SOLICITADOS]: "Cambios solicitados",
 };
 
+export const CV_STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  [CVStatus.PENDIENTE]: "outline",
+  [CVStatus.APROBADO]: "default",
+  [CVStatus.RECHAZADO]: "destructive",
+  [CVStatus.CAMBIOS_SOLICITADOS]: "secondary",
+};
+
 export const CV_SOURCE_LABELS: Record<string, string> = {
   [CVSourceType.UPLOAD]: "Subido",
   [CVSourceType.BUILDER]: "Generado",
