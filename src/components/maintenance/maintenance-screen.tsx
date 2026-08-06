@@ -1,5 +1,7 @@
 import { BriefcaseBusinessIcon, WrenchIcon } from "lucide-react";
 
+import { MaintenanceAdminLogin } from "@/components/maintenance/maintenance-admin-login";
+
 const DEFAULT_MESSAGE =
   "Estamos realizando mejoras en la plataforma. Volveremos a estar disponibles muy pronto.";
 
@@ -29,6 +31,7 @@ export function MaintenanceScreen({ message }: { message?: string | null }) {
           {message?.trim() ? message : DEFAULT_MESSAGE}
         </p>
       </div>
+      <MaintenanceAdminLogin />
     </main>
   );
 }
