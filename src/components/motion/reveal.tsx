@@ -85,4 +85,50 @@ function StaggerItem({
   )
 }
 
-export { Reveal, Stagger, StaggerItem }
+interface BlurInProps {
+  children: ReactNode
+  delay?: number
+  duration?: number
+  className?: string
+  once?: boolean
+}
+
+/** Fade + blur entrance, for hero/headline elements that want a softer arrival than FadeIn. */
+function BlurIn({ children, delay = 0, duration = 0.7, className, once = true }: BlurInProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, filter: "blur(0px)" }}
+      viewport={{ once, margin: "-60px" }}
+      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+interface ScaleInProps {
+  children: ReactNode
+  delay?: number
+  duration?: number
+  className?: string
+  once?: boolean
+}
+
+/** Gentle scale-up entrance for cards/badges. */
+function ScaleIn({ children, delay = 0, duration = 0.5, className, once = true }: ScaleInProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.92 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once, margin: "-60px" }}
+      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+export { Reveal, Stagger, StaggerItem, BlurIn, ScaleIn }

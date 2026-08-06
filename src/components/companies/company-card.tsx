@@ -15,13 +15,18 @@ function CompanyCard({ company, className }: CompanyCardProps) {
     <div
       data-slot="company-card"
       className={cn(
-        "group flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-foreground/[0.04]",
+        "group relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_16px_32px_rgba(15,23,42,0.08)]",
         className
       )}
     >
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-1 scale-x-0 bg-gradient-to-r from-primary to-success transition-transform duration-300 group-hover:scale-x-100"
+      />
+
       <div className="flex items-start gap-3">
         <span
-          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-semibold text-white"
+          className="flex size-12 shrink-0 items-center justify-center rounded-xl text-base font-semibold text-white shadow-sm"
           style={{ backgroundColor: company.color }}
         >
           {company.initials}
@@ -35,7 +40,7 @@ function CompanyCard({ company, className }: CompanyCardProps) {
               {company.name}
             </Link>
             {company.verified && (
-              <BadgeCheckIcon className="size-4 text-primary" />
+              <BadgeCheckIcon className="size-4 shrink-0 text-primary" aria-label="Empresa verificada" />
             )}
           </div>
           <span className="text-sm text-muted-foreground">
@@ -44,24 +49,20 @@ function CompanyCard({ company, className }: CompanyCardProps) {
         </div>
       </div>
 
-      <p className="line-clamp-2 text-sm text-muted-foreground">
-        {company.description}
-      </p>
-
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
           <MapPinIcon className="size-3.5" />
           {company.location}
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/8 px-2.5 py-1 font-medium text-primary">
           <BriefcaseIcon className="size-3.5" />
-          {company.jobCount} vacantes
+          {company.jobCount} vacante{company.jobCount === 1 ? "" : "s"}
         </span>
       </div>
 
       <Button
         variant="outline"
-        className="mt-1 w-full"
+        className="mt-1 w-full rounded-xl group-hover:border-primary/40 group-hover:text-primary"
         render={<Link href={`/empresas/${company.slug}`} />}
         nativeButton={false}
       >
