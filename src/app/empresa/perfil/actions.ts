@@ -9,6 +9,11 @@ import { logAudit } from "@/services/audit/audit.service";
 import { getRequestMeta } from "@/lib/request-meta";
 import { Permission } from "@/generated/prisma/enums";
 
+function revalidateEmpresaPerfil() {
+  revalidatePath("/empresa/perfil");
+  revalidatePath("/empresa");
+}
+
 export async function updateOwnCompanyAction(input: unknown): Promise<ActionResult<null>> {
   try {
     const { userId, companyId } = await requireCompanyPermission(Permission.EMPRESA_PERFIL_EDITAR);
@@ -25,8 +30,39 @@ export async function updateOwnCompanyAction(input: unknown): Promise<ActionResu
       ipAddress,
       userAgent,
     });
-    revalidatePath("/empresa/perfil");
-    revalidatePath("/empresa");
+    revalidateEmpresaPerfil();
+    return actionOk(null);
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}
+
+export async function uploadCompanyLogoAction(
+  formData: FormData
+): Promise<ActionResult<{ logoUrl: string }>> {
+  try {
+    const { companyId } = await requireCompanyPermission(Permission.EMPRESA_PERFIL_EDITAR);
+    const file = formData.get("file");
+    if (!(file instanceof File)) return actionError("Archivo no válido");
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const logoUrl = await companyService.updateCompanyLogo(companyId, {
+      buffer,
+      originalName: file.name,
+      mimeType: file.type,
+    });
+    revalidateEmpresaPerfil();
+    return actionOk({ logoUrl });
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}
+
+export async function removeCompanyLogoAction(): Promise<ActionResult<null>> {
+  try {
+    const { companyId } = await requireCompanyPermission(Permission.EMPRESA_PERFIL_EDITAR);
+    await companyService.removeCompanyLogo(companyId);
+    revalidateEmpresaPerfil();
     return actionOk(null);
   } catch (e) {
     return actionError(errorMessage(e));

@@ -11,27 +11,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { companyProfileSchema, type CompanyProfileInput } from "@/validations/company.schema";
+import { companyProfileSchema, type CompanyProfileFormValues } from "@/validations/company.schema";
 import { COUNTRIES } from "@/lib/geo";
 import { updateOwnCompanyAction } from "./actions";
+import { LogoUpload } from "./logo-upload";
+import { SocialLinksField } from "./social-links-field";
 
 const COUNTRY_NAMES = COUNTRIES.map((c) => c.name).sort();
 
 interface CompanyProfileFormProps {
-  defaultValues: CompanyProfileInput;
+  defaultValues: CompanyProfileFormValues;
+  logoUrl: string | null;
+  initials: string | null;
 }
 
-export function CompanyProfileForm({ defaultValues }: CompanyProfileFormProps) {
+export function CompanyProfileForm({ defaultValues, logoUrl, initials }: CompanyProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
-  const form = useForm<CompanyProfileInput>({
+  const form = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
     defaultValues,
   });
 
-  function onSubmit(values: CompanyProfileInput) {
+  function onSubmit(values: CompanyProfileFormValues) {
     setFormError(null);
     startTransition(async () => {
       const result = await updateOwnCompanyAction(values);
@@ -53,6 +57,9 @@ export function CompanyProfileForm({ defaultValues }: CompanyProfileFormProps) {
             <CardTitle>Información de la empresa</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <LogoUpload logoUrl={logoUrl} initials={initials} />
+            </div>
             <FormField
               control={form.control}
               name="name"
@@ -199,6 +206,15 @@ export function CompanyProfileForm({ defaultValues }: CompanyProfileFormProps) {
                 </FormItem>
               )}
             />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Redes sociales</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SocialLinksField />
           </CardContent>
         </Card>
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { socialLinkSchema } from "./candidate.schema";
 
 export const companyProfileSchema = z.object({
   name: z.string().trim().min(2, "Mínimo 2 caracteres").max(150),
@@ -14,6 +15,9 @@ export const companyProfileSchema = z.object({
   contactName: z.string().trim().max(150).optional().or(z.literal("")),
   contactEmail: z.email().optional().or(z.literal("")),
   contactPhone: z.string().trim().max(30).optional().or(z.literal("")),
+  socialLinks: z.array(socialLinkSchema).max(6, "Máximo 6 redes sociales").default([]),
 });
 
 export type CompanyProfileInput = z.infer<typeof companyProfileSchema>;
+/** Raw shape react-hook-form manages client-side, before zod defaults run. */
+export type CompanyProfileFormValues = z.input<typeof companyProfileSchema>;

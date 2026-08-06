@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { ApplicationStatus, JobStatus, NotificationType, Prisma } from "@/generated/prisma/client";
 import { createNotification } from "@/services/notification/notification.service";
+import { APPLICATION_STATUS_LABELS } from "@/lib/application-labels";
 
 export async function createApplication(
   candidateId: string,
   jobPostingId: string,
+  userId: string,
   coverLetter?: string
 ) {
   const jobPosting = await prisma.jobPosting.findUnique({
@@ -33,6 +35,14 @@ export async function createApplication(
           coverLetter: coverLetter?.trim() || null,
         },
       });
+      await tx.applicationStatusEvent.create({
+        data: {
+          applicationId: application.id,
+          fromStatus: null,
+          toStatus: ApplicationStatus.RECIBIDA,
+          changedById: userId,
+        },
+      });
       await createNotification(
         {
           userId: jobPosting.company.userId,
@@ -59,6 +69,8 @@ export async function listApplicationsByCandidate(candidateId: string) {
       jobPosting: {
         include: { company: { select: { name: true, slug: true, color: true, initials: true } } },
       },
+      cv: { select: { fileName: true, status: true, reviewReason: true } },
+      statusEvents: { orderBy: { createdAt: "asc" } },
     },
     orderBy: { appliedAt: "desc" },
   });
@@ -90,16 +102,47 @@ export async function listApplicationsForJobPosting(companyId: string, jobPostin
 export async function updateApplicationStatus(
   companyId: string,
   applicationId: string,
-  status: ApplicationStatus
+  status: ApplicationStatus,
+  changedById: string,
+  note?: string
 ) {
   const application = await prisma.application.findFirst({
     where: { id: applicationId, jobPosting: { companyId } },
+    include: {
+      candidate: { select: { userId: true } },
+      jobPosting: { select: { title: true } },
+    },
   });
   if (!application) throw new Error("Postulación no encontrada");
 
-  return prisma.application.update({
-    where: { id: applicationId },
-    data: { status, statusUpdatedAt: new Date() },
+  const trimmedNote = note?.trim() || null;
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.application.update({
+      where: { id: applicationId },
+      data: { status, statusUpdatedAt: new Date() },
+    });
+    await tx.applicationStatusEvent.create({
+      data: {
+        applicationId,
+        fromStatus: application.status,
+        toStatus: status,
+        note: trimmedNote,
+        changedById,
+      },
+    });
+    await createNotification(
+      {
+        userId: application.candidate.userId,
+        type: NotificationType.ESTADO_POSTULACION_CAMBIADO,
+        title: "Actualización de tu postulación",
+        message: trimmedNote
+          ? `Tu postulación a "${application.jobPosting.title}" cambió a "${APPLICATION_STATUS_LABELS[status]}": ${trimmedNote}`
+          : `Tu postulación a "${application.jobPosting.title}" cambió a "${APPLICATION_STATUS_LABELS[status]}".`,
+      },
+      tx
+    );
+    return updated;
   });
 }
 

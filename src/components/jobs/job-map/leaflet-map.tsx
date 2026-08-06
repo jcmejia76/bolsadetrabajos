@@ -7,13 +7,13 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import { useEffect, useRef } from "react"
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet"
 import L from "leaflet"
-import { useTheme } from "next-themes"
 
 import type { JobCardData } from "@/lib/job-view-model"
 import { MarkerClusterGroup } from "./marker-cluster-group"
 
+/** Always the light "voyager" style — kept consistent regardless of the site's
+ * light/dark (noche azul) theme, since the dark tile set read as low-contrast. */
 const LIGHT_TILE_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-const DARK_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 
@@ -102,7 +102,6 @@ function LeafletMap({
   onBoundsChange,
   onMapReady,
 }: LeafletMapProps) {
-  const { resolvedTheme } = useTheme()
   const mapRef = useRef<L.Map | null>(null)
 
   return (
@@ -118,11 +117,7 @@ function LeafletMap({
         }
       }}
     >
-      <TileLayer
-        key={resolvedTheme === "dark" ? "dark" : "light"}
-        url={resolvedTheme === "dark" ? DARK_TILE_URL : LIGHT_TILE_URL}
-        attribution={TILE_ATTRIBUTION}
-      />
+      <TileLayer url={LIGHT_TILE_URL} attribution={TILE_ATTRIBUTION} />
       <MarkerClusterGroup
         jobs={jobs}
         hoveredJobId={hoveredJobId}

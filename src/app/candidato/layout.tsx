@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, SendIcon, FileTextIcon, UserIcon, BookmarkIcon } from "lucide-react";
+import { LayoutDashboardIcon, SendIcon, FileTextIcon, UserIcon, BookmarkIcon, KeyRoundIcon } from "lucide-react";
 
 import { requireRole } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
@@ -14,6 +14,7 @@ const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/candidato/cv", label: "Mis CVs", icon: <FileTextIcon className="size-4" /> },
   { href: "/candidato/perfil", label: "Mi Perfil", icon: <UserIcon className="size-4" /> },
   { href: "/candidato/favoritos", label: "Favoritos", icon: <BookmarkIcon className="size-4" /> },
+  { href: "/candidato/cuenta", label: "Mi Cuenta", icon: <KeyRoundIcon className="size-4" /> },
 ];
 
 export default async function CandidatoLayout({ children }: { children: React.ReactNode }) {

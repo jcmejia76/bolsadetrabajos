@@ -209,6 +209,11 @@ model User {
   passwordHash String
   role         Role
   isActive     Boolean  @default(true)
+  firstName    String?
+  lastName     String?
+  phone        String?
+  photoUrl     String?
+  aboutMe      String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -220,8 +225,9 @@ model User {
   approvedCompanies   Company[]         @relation("CompanyApprovedBy")
   createdJobPostings  JobPosting[]      @relation("JobCreatedBy")
   approvedJobPostings JobPosting[]      @relation("JobApprovedBy")
-  reviewedCVs         CV[]              @relation("CVReviewedBy")
+  reviewedCVs         CV[]                     @relation("CVReviewedBy")
   applicationNotes    ApplicationNote[]
+  applicationStatusChanges ApplicationStatusEvent[] @relation("ApplicationStatusChangedBy")
   updatedSiteSettings SiteSettings[]    @relation("SiteSettingsUpdatedBy")
   staffAccount        StaffMember?      @relation("StaffAccount")
   invitedStaff        StaffMember[]     @relation("StaffInvitedBy")
@@ -497,7 +503,8 @@ model Application {
   statusUpdatedAt DateTime?
   updatedAt       DateTime  @updatedAt
 
-  notes ApplicationNote[]
+  notes        ApplicationNote[]
+  statusEvents ApplicationStatusEvent[]
 
   @@unique([jobPostingId, candidateId])
   @@index([status])
@@ -514,6 +521,21 @@ model ApplicationNote {
   createdAt     DateTime    @default(now())
 
   @@index([applicationId])
+}
+
+/// One row per status transition of an Application — the candidate-facing timeline.
+model ApplicationStatusEvent {
+  id            String             @id @default(cuid())
+  applicationId String
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  note          String?            @db.Text
+  changedById   String
+  changedBy     User               @relation("ApplicationStatusChangedBy", fields: [changedById], references: [id])
+  createdAt     DateTime           @default(now())
+
+  @@index([applicationId, createdAt])
 }
 
 model Favorite {

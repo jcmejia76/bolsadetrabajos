@@ -41,15 +41,19 @@ function HowItWorks() {
         </p>
       </Reveal>
 
-      <Stagger className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <Stagger className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        <div
+          aria-hidden
+          className="absolute top-6 right-0 left-0 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent lg:block"
+        />
         {STEPS.map((step, i) => (
-          <StaggerItem key={step.title} className="relative flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <step.icon className="size-5.5" />
-              </span>
-              <span className="text-3xl font-semibold text-border tabular-nums">
+          <StaggerItem key={step.title} className="group relative flex flex-col gap-4">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-bold text-success tabular-nums">
                 {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[0_0_0_6px_var(--background)] transition-transform duration-300 group-hover:scale-110">
+                <step.icon className="size-5.5" />
               </span>
             </div>
             <div>

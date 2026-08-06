@@ -6,6 +6,7 @@ import {
   UsersIcon,
   SendIcon,
   SettingsIcon,
+  KeyRoundIcon,
 } from "lucide-react";
 
 import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
@@ -22,6 +23,7 @@ const NAV_ITEMS: DashboardNavItem[] = [
   { href: "/admin/candidatos", label: "Candidatos", icon: <UsersIcon className="size-4" /> },
   { href: "/admin/postulaciones", label: "Postulaciones", icon: <SendIcon className="size-4" /> },
   { href: "/admin/configuracion", label: "Configuración", icon: <SettingsIcon className="size-4" /> },
+  { href: "/admin/cuenta", label: "Mi Cuenta", icon: <KeyRoundIcon className="size-4" /> },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

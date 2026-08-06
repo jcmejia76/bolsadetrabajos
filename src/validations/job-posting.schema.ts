@@ -22,8 +22,8 @@ export const jobPostingSchema = z
     department: z.string().trim().max(100).optional().or(z.literal("")),
     city: z.string().trim().max(100).optional().or(z.literal("")),
     country: z.string().trim().max(100).optional().or(z.literal("")),
-    salaryMin: z.coerce.number().nonnegative().nullable().optional(),
-    salaryMax: z.coerce.number().nonnegative().nullable().optional(),
+    salaryMin: z.coerce.number().positive("El salario mínimo es obligatorio"),
+    salaryMax: z.coerce.number().positive("El salario máximo es obligatorio"),
     salaryVisible: z.boolean().default(false),
     description: z.string().trim().min(20, "Mínimo 20 caracteres"),
     responsibilities: z.string().trim().max(5000).optional().or(z.literal("")),
@@ -43,7 +43,7 @@ export const jobPostingSchema = z
       .transform((arr) => Array.from(new Set(arr.map((k) => k.trim()))).filter(Boolean)),
     requiredLanguages: z.array(jobRequiredLanguageSchema).max(10).default([]),
   })
-  .refine((d) => !d.salaryMin || !d.salaryMax || d.salaryMax >= d.salaryMin, {
+  .refine((d) => d.salaryMax >= d.salaryMin, {
     message: "El salario máximo debe ser mayor o igual al mínimo",
     path: ["salaryMax"],
   })
