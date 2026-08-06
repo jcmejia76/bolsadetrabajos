@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { CompanyStatus, JobStatus, NotificationType } from "@/generated/prisma/client";
 import { createNotification } from "@/services/notification/notification.service";
+import { getStorageService, validateFile, keyFromUrl } from "@/services/storage";
 import type { CompanyProfileInput } from "@/validations/company.schema";
 
 function emptyToNull(value: string | undefined | null): string | null {
@@ -140,8 +141,42 @@ export async function updateCompany(companyId: string, input: CompanyProfileInpu
       contactName: emptyToNull(input.contactName),
       contactEmail: emptyToNull(input.contactEmail),
       contactPhone: emptyToNull(input.contactPhone),
+      socialLinks: input.socialLinks,
     },
   });
+}
+
+export async function updateCompanyLogo(
+  companyId: string,
+  file: { buffer: Buffer; originalName: string; mimeType: string }
+) {
+  validateFile(
+    { mimeType: file.mimeType, sizeBytes: file.buffer.byteLength, buffer: file.buffer, originalName: file.originalName },
+    "image",
+    2
+  );
+
+  const existing = await prisma.company.findUniqueOrThrow({ where: { id: companyId } });
+  const storage = getStorageService();
+  const result = await storage.upload({ ...file, folder: "logos" });
+
+  await prisma.company.update({ where: { id: companyId }, data: { logoUrl: result.url } });
+
+  if (existing.logoUrl) {
+    await storage.delete(keyFromUrl(existing.logoUrl)).catch(() => undefined);
+  }
+
+  return result.url;
+}
+
+export async function removeCompanyLogo(companyId: string) {
+  const existing = await prisma.company.findUniqueOrThrow({ where: { id: companyId } });
+  if (!existing.logoUrl) return;
+
+  await prisma.company.update({ where: { id: companyId }, data: { logoUrl: null } });
+  await getStorageService()
+    .delete(keyFromUrl(existing.logoUrl))
+    .catch(() => undefined);
 }
 
 export async function deleteCompany(companyId: string) {

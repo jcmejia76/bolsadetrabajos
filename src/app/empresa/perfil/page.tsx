@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireCompanySession } from "@/lib/auth-utils";
 import { getCompanyById } from "@/services/company/company.service";
 import { CompanyProfileForm } from "./company-profile-form";
-import type { CompanyProfileInput } from "@/validations/company.schema";
+import type { CompanyProfileFormValues } from "@/validations/company.schema";
 
 export const metadata: Metadata = {
   title: "Mi Empresa | Bolsa de Trabajos",
@@ -13,7 +13,7 @@ export default async function EmpresaPerfilPage() {
   const company = await getCompanyById(companyId);
   if (!company) throw new Error("Empresa no encontrada");
 
-  const defaultValues: CompanyProfileInput = {
+  const defaultValues: CompanyProfileFormValues = {
     name: company.name,
     email: company.email,
     phone: company.phone ?? "",
@@ -27,6 +27,7 @@ export default async function EmpresaPerfilPage() {
     contactName: company.contactName ?? "",
     contactEmail: company.contactEmail ?? "",
     contactPhone: company.contactPhone ?? "",
+    socialLinks: Array.isArray(company.socialLinks) ? (company.socialLinks as never) : [],
   };
 
   return (
@@ -37,7 +38,11 @@ export default async function EmpresaPerfilPage() {
           Esta información es la que ven los candidatos en tu perfil público.
         </p>
       </div>
-      <CompanyProfileForm defaultValues={defaultValues} />
+      <CompanyProfileForm
+        defaultValues={defaultValues}
+        logoUrl={company.logoUrl}
+        initials={company.initials}
+      />
     </div>
   );
 }

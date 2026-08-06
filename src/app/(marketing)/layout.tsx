@@ -7,6 +7,7 @@ import { Footer } from "@/components/marketing/footer"
 import { SkipLink } from "@/components/ui/skip-link"
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen"
 import { getMaintenanceState } from "@/services/settings/site-settings.service"
+import { listAllCategories } from "@/services/job-posting/job-posting-public.service"
 
 const ROLE_LABEL: Record<Role, string> = {
   [Role.ADMINISTRADOR]: "Administrador",
@@ -45,7 +46,7 @@ export default async function MarketingLayout({
   const { maintenanceMode, maintenanceMessage } = await getMaintenanceState()
   if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />
 
-  const session = await auth()
+  const [session, categories] = await Promise.all([auth(), listAllCategories()])
   const user = session?.user
     ? {
         name: session.user.name ?? session.user.email,
@@ -58,7 +59,7 @@ export default async function MarketingLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
-      <Navbar user={user} />
+      <Navbar user={user} categories={categories} />
       <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </div>

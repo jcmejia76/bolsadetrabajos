@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { companyProfileSchema, type CompanyProfileInput } from "@/validations/company.schema";
+import { companyProfileSchema, type CompanyProfileFormValues } from "@/validations/company.schema";
 import { updateCompanyAction } from "../actions";
 
 interface EditCompanyFormProps {
   companyId: string;
-  defaultValues: CompanyProfileInput;
+  defaultValues: CompanyProfileFormValues;
 }
 
 export function EditCompanyForm({ companyId, defaultValues }: EditCompanyFormProps) {
@@ -23,12 +23,12 @@ export function EditCompanyForm({ companyId, defaultValues }: EditCompanyFormPro
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
-  const form = useForm<CompanyProfileInput>({
+  const form = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
     defaultValues,
   });
 
-  function onSubmit(values: CompanyProfileInput) {
+  function onSubmit(values: CompanyProfileFormValues) {
     setFormError(null);
     startTransition(async () => {
       const result = await updateCompanyAction(companyId, values);

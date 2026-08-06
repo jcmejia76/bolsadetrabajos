@@ -8,7 +8,7 @@ import { COMPANY_STATUS_LABELS, COMPANY_STATUS_VARIANTS } from "@/lib/company-la
 import { JOB_STATUS_LABELS } from "@/lib/job-posting-labels";
 import { EditCompanyForm } from "./edit-company-form";
 import { CompanyDetailActions } from "./company-detail-actions";
-import type { CompanyProfileInput } from "@/validations/company.schema";
+import type { CompanyProfileFormValues } from "@/validations/company.schema";
 
 export default async function AdminCompanyDetailPage({
   params,
@@ -19,7 +19,7 @@ export default async function AdminCompanyDetailPage({
   const company = await getCompanyById(id);
   if (!company) notFound();
 
-  const defaultValues: CompanyProfileInput = {
+  const defaultValues: CompanyProfileFormValues = {
     name: company.name,
     description: company.description ?? "",
     industry: company.industry ?? "",

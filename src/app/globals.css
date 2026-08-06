@@ -7,6 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
@@ -64,6 +66,8 @@
   --accent: oklch(0.955 0.014 258);
   --accent-foreground: oklch(0.3 0.05 258);
   --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.723 0.219 149.6);
+  --success-foreground: oklch(0.99 0.005 149.6);
   --border: oklch(0.914 0.008 258);
   --input: oklch(0.914 0.008 258);
   --ring: oklch(0.56 0.17 258);
@@ -84,37 +88,39 @@
 }
 
 .dark {
-  --background: oklch(0.155 0.014 258);
-  --foreground: oklch(0.97 0.006 258);
-  --card: oklch(0.205 0.015 258);
-  --card-foreground: oklch(0.97 0.006 258);
-  --popover: oklch(0.205 0.015 258);
-  --popover-foreground: oklch(0.97 0.006 258);
-  --primary: oklch(0.66 0.16 258);
+  --background: oklch(0.16 0.045 258);
+  --foreground: oklch(0.97 0.008 258);
+  --card: oklch(0.21 0.05 258);
+  --card-foreground: oklch(0.97 0.008 258);
+  --popover: oklch(0.21 0.05 258);
+  --popover-foreground: oklch(0.97 0.008 258);
+  --primary: oklch(0.68 0.17 258);
   --primary-foreground: oklch(0.145 0.02 258);
-  --secondary: oklch(0.255 0.016 258);
-  --secondary-foreground: oklch(0.97 0.006 258);
-  --muted: oklch(0.255 0.016 258);
-  --muted-foreground: oklch(0.66 0.022 258);
-  --accent: oklch(0.28 0.03 258);
-  --accent-foreground: oklch(0.97 0.006 258);
+  --secondary: oklch(0.27 0.045 258);
+  --secondary-foreground: oklch(0.97 0.008 258);
+  --muted: oklch(0.27 0.045 258);
+  --muted-foreground: oklch(0.7 0.035 258);
+  --accent: oklch(0.32 0.065 258);
+  --accent-foreground: oklch(0.97 0.008 258);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.66 0.16 258);
+  --success: oklch(0.77 0.19 149.6);
+  --success-foreground: oklch(0.145 0.02 149.6);
+  --border: oklch(0.97 0.03 258 / 12%);
+  --input: oklch(0.97 0.03 258 / 16%);
+  --ring: oklch(0.68 0.17 258);
   --chart-1: #3987e5;
   --chart-2: #d95926;
   --chart-3: #199e70;
   --chart-4: #c98500;
   --chart-5: #d55181;
-  --sidebar: oklch(0.19 0.015 258);
-  --sidebar-foreground: oklch(0.97 0.006 258);
-  --sidebar-primary: oklch(0.66 0.16 258);
+  --sidebar: oklch(0.195 0.05 258);
+  --sidebar-foreground: oklch(0.97 0.008 258);
+  --sidebar-primary: oklch(0.68 0.17 258);
   --sidebar-primary-foreground: oklch(0.145 0.02 258);
-  --sidebar-accent: oklch(0.255 0.016 258);
-  --sidebar-accent-foreground: oklch(0.97 0.006 258);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.66 0.16 258);
+  --sidebar-accent: oklch(0.27 0.045 258);
+  --sidebar-accent-foreground: oklch(0.97 0.008 258);
+  --sidebar-border: oklch(0.97 0.03 258 / 12%);
+  --sidebar-ring: oklch(0.68 0.17 258);
 }
 
 @layer base {
@@ -200,6 +206,26 @@ html[data-a11y-high-contrast] :where(button, a, input, select, textarea) {
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  .bg-hero-gradient {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 85% 15%, color-mix(in oklch, var(--success) 22%, transparent), transparent),
+      radial-gradient(ellipse 60% 50% at 15% 85%, color-mix(in oklch, var(--primary) 35%, transparent), transparent),
+      linear-gradient(135deg, #0a1330 0%, #0f1d45 45%, #131c4a 75%, #1a1f52 100%);
+  }
+
+  .bg-particles {
+    background-image:
+      radial-gradient(1.5px 1.5px at 10% 20%, rgba(255, 255, 255, 0.35), transparent),
+      radial-gradient(1.5px 1.5px at 25% 65%, rgba(255, 255, 255, 0.25), transparent),
+      radial-gradient(2px 2px at 40% 30%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1.5px 1.5px at 60% 80%, rgba(255, 255, 255, 0.2), transparent),
+      radial-gradient(2px 2px at 75% 45%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1.5px 1.5px at 90% 15%, rgba(255, 255, 255, 0.25), transparent),
+      radial-gradient(1.5px 1.5px at 50% 10%, rgba(255, 255, 255, 0.2), transparent),
+      radial-gradient(2px 2px at 15% 90%, rgba(255, 255, 255, 0.2), transparent);
+    background-repeat: no-repeat;
   }
 
   .bg-grid-fade {
@@ -309,5 +335,15 @@ html[data-a11y-high-contrast] :where(button, a, input, select, textarea) {
 .job-map-popup .leaflet-popup-close-button {
   top: 8px !important;
   right: 8px !important;
+  color: var(--muted-foreground) !important;
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in oklch, var(--card) 85%, transparent) !important;
+  color: var(--muted-foreground) !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+}
+
+.leaflet-control-attribution a {
   color: var(--muted-foreground) !important;
 }

@@ -54,15 +54,27 @@ export function ApplicantsTable({
   const [isPending, startTransition] = useTransition();
   const [notesTarget, setNotesTarget] = useState<Application | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [statusChange, setStatusChange] = useState<{ application: Application; status: string } | null>(
+    null
+  );
+  const [statusNoteDraft, setStatusNoteDraft] = useState("");
 
-  function handleStatusChange(applicationId: string, status: string) {
+  function confirmStatusChange() {
+    if (!statusChange) return;
+    const { application, status } = statusChange;
     startTransition(async () => {
-      const result = await updateApplicationStatusAction(jobPostingId, { applicationId, status });
+      const result = await updateApplicationStatusAction(jobPostingId, {
+        applicationId: application.id,
+        status,
+        note: statusNoteDraft.trim(),
+      });
       if (!result.success) {
         toast.error(result.error);
         return;
       }
       toast.success("Estado actualizado");
+      setStatusChange(null);
+      setStatusNoteDraft("");
       router.refresh();
     });
   }
@@ -106,7 +118,7 @@ export function ApplicantsTable({
               <TableCell className="px-4 py-3">
                 <Select
                   value={application.status}
-                  onValueChange={(value) => value && handleStatusChange(application.id, value)}
+                  onValueChange={(value) => value && setStatusChange({ application, status: value })}
                 >
                   <SelectTrigger className="w-44">
                     <SelectValue>{(value: string) => STATUS_LABELS[value]}</SelectValue>
@@ -177,6 +189,46 @@ export function ApplicantsTable({
           <DialogFooter>
             <Button onClick={handleAddNote} disabled={isPending || !noteDraft.trim()}>
               Agregar nota
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!statusChange}
+        onOpenChange={(open) => {
+          if (!open) {
+            setStatusChange(null);
+            setStatusNoteDraft("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Cambiar estado a &quot;{statusChange && STATUS_LABELS[statusChange.status]}&quot;
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-sm text-muted-foreground">
+            El candidato verá este cambio en la línea de tiempo de su postulación. Puedes agregarle un
+            mensaje opcional (por ejemplo, para coordinar una entrevista).
+          </p>
+
+          <Textarea
+            placeholder="Mensaje para el candidato (opcional)..."
+            value={statusNoteDraft}
+            onChange={(e) => setStatusNoteDraft(e.target.value)}
+            rows={3}
+            maxLength={500}
+          />
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusChange(null)} disabled={isPending}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmStatusChange} disabled={isPending}>
+              Confirmar cambio
             </Button>
           </DialogFooter>
         </DialogContent>

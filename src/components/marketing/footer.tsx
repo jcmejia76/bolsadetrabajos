@@ -2,7 +2,7 @@
 
 import type { SVGProps } from "react"
 import Link from "next/link"
-import { BriefcaseBusinessIcon } from "lucide-react"
+import { ArrowRightIcon, BriefcaseBusinessIcon } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -80,19 +80,20 @@ const SOCIALS = [
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <footer className="relative overflow-hidden bg-gradient-to-b from-[#0f172a] to-[#0b1220] text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-particles opacity-20" />
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1.2fr]">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-white">
                 <BriefcaseBusinessIcon className="size-4.5" />
               </span>
-              <span className="text-[15px] font-semibold tracking-tight text-foreground">
+              <span className="text-[15px] font-semibold tracking-tight text-white">
                 Bolsa de Trabajos
               </span>
             </Link>
-            <p className="max-w-xs text-sm text-muted-foreground">
+            <p className="max-w-xs text-sm text-white/60">
               Conectamos talento excepcional con las empresas que están
               construyendo el futuro. Encuentra tu próximo empleo o al
               candidato ideal.
@@ -103,7 +104,7 @@ function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="flex size-9 items-center justify-center rounded-lg text-white/60 transition-all hover:-translate-y-0.5 hover:bg-white/10 hover:text-white"
                 >
                   <Icon className="size-4" />
                 </a>
@@ -113,7 +114,7 @@ function Footer() {
 
           {FOOTER_COLUMNS.map((column) => (
             <div key={column.title} className="flex flex-col gap-3">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="text-sm font-semibold text-white">
                 {column.title}
               </h3>
               <ul className="flex flex-col gap-2.5">
@@ -121,7 +122,7 @@ function Footer() {
                   <li key={`${link.href}-${i}`}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="text-sm text-white/60 transition-colors hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -132,10 +133,10 @@ function Footer() {
           ))}
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-foreground">
+            <h3 className="text-sm font-semibold text-white">
               Mantente al día
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/60">
               Recibe nuevas vacantes y noticias del mercado laboral cada
               semana.
             </p>
@@ -143,24 +144,29 @@ function Footer() {
               className="flex flex-col gap-2"
               onSubmit={(e) => e.preventDefault()}
             >
-              <Input type="email" placeholder="tu@correo.com" />
-              <Button type="submit" className="w-full">
+              <Input
+                type="email"
+                placeholder="tu@correo.com"
+                className="border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-primary/50"
+              />
+              <Button type="submit" className="group w-full gap-1.5 rounded-lg">
                 Suscribirme
+                <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </form>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+          <p className="text-sm text-white/50">
             © {new Date().getFullYear()} Bolsa de Trabajos. Todos los
             derechos reservados.
           </p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link href="/login" className="hover:text-foreground">
+          <div className="flex items-center gap-6 text-sm text-white/50">
+            <Link href="/login" className="hover:text-white">
               Privacidad
             </Link>
-            <Link href="/login" className="hover:text-foreground">
+            <Link href="/login" className="hover:text-white">
               Términos
             </Link>
           </div>

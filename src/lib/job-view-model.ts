@@ -1,5 +1,5 @@
-import { MODALIDAD_LABELS, JORNADA_LABELS } from "@/lib/job-posting-labels";
-import { JobModalidad } from "@/generated/prisma/enums";
+import { MODALIDAD_LABELS, JORNADA_LABELS, EXPERIENCE_LABELS } from "@/lib/job-posting-labels";
+import { JobModalidad, type ExperienceLevel } from "@/generated/prisma/enums";
 import type { PublishedJobPosting, PublishedJobPostingDetail } from "@/services/job-posting/job-posting-public.service";
 
 /**
@@ -29,6 +29,8 @@ export interface JobCardData {
   category: string;
   categorySlug?: string;
   tags: string[];
+  experienceLevel: ExperienceLevel | null;
+  experienceLevelLabel: string | null;
   postedDaysAgo: number;
   featured: boolean;
   applicantsCount: number;
@@ -80,6 +82,8 @@ function mapCore(job: PublishedJobPosting, favoritedIds?: Set<string>): JobCardD
     category: job.category?.name ?? "Sin categoría",
     categorySlug: job.category?.slug,
     tags: job.keywords,
+    experienceLevel: job.experienceLevel,
+    experienceLevelLabel: job.experienceLevel ? EXPERIENCE_LABELS[job.experienceLevel] : null,
     postedDaysAgo: daysSince(job.publishedAt),
     featured: job.isFeatured,
     applicantsCount: job._count.applications,

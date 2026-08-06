@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, BriefcaseIcon, BuildingIcon, UsersIcon } from "lucide-react";
+import { LayoutDashboardIcon, BriefcaseIcon, BuildingIcon, UsersIcon, KeyRoundIcon } from "lucide-react";
 
 import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
 import { Role, Permission } from "@/generated/prisma/enums";
@@ -31,6 +31,7 @@ export default async function EmpresaLayout({ children }: { children: React.Reac
     ...(isOwner || permissions.includes(Permission.EMPRESA_EQUIPO_INVITAR)
       ? [{ href: "/empresa/equipo", label: "Equipo", icon: <UsersIcon className="size-4" /> }]
       : []),
+    { href: "/empresa/cuenta", label: "Mi Cuenta", icon: <KeyRoundIcon className="size-4" /> },
   ];
 
   return (

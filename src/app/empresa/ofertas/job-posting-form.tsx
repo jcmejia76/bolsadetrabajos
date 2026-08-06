@@ -51,8 +51,8 @@ const emptyDefaults: JobPostingFormValues = {
   department: "",
   city: "",
   country: "",
-  salaryMin: null,
-  salaryMax: null,
+  salaryMin: "" as unknown as number,
+  salaryMax: "" as unknown as number,
   salaryVisible: false,
   description: "",
   responsibilities: "",
@@ -361,14 +361,14 @@ export function JobPostingForm({
               name="salaryMin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salario mínimo</FormLabel>
+                  <FormLabel required>Salario mínimo</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
                       step="0.01"
-                      value={(field.value as string | number | null) ?? ""}
-                      onChange={(e) => field.onChange(e.target.value === "" ? null : e.target.value)}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -381,14 +381,14 @@ export function JobPostingForm({
               name="salaryMax"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salario máximo</FormLabel>
+                  <FormLabel required>Salario máximo</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
                       step="0.01"
-                      value={(field.value as string | number | null) ?? ""}
-                      onChange={(e) => field.onChange(e.target.value === "" ? null : e.target.value)}
+                      value={(field.value as string | number | undefined) ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <FormMessage />
