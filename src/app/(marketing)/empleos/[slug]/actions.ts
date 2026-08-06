@@ -21,7 +21,7 @@ export async function applyToJobAction(
   }
 
   try {
-    await createApplication(session.user.candidateId, jobPostingId);
+    await createApplication(session.user.candidateId, jobPostingId, session.user.id);
     const { ipAddress, userAgent } = await getRequestMeta();
     await logAudit({
       actorId: session.user.id,

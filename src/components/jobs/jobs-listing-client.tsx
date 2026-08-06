@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { LatLngBounds } from "leaflet"
-import { FilterIcon, MapPinIcon, SearchIcon, SearchXIcon } from "lucide-react"
+import { FilterIcon, SearchXIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -304,8 +303,16 @@ function JobsListingClient({
     resetPaging()
   }, [])
 
+  const hasQueryOrLocation = query.trim() !== "" || location.trim() !== ""
+
+  function handleClearQueryLocation() {
+    setQuery("")
+    setLocation("")
+    resetPaging()
+  }
+
   return (
-    <div className="flex h-[calc(100dvh-82px)] flex-col">
+    <div className="flex h-[calc(100dvh-83px)] flex-col lg:h-[calc(100dvh-135px)]">
       <div className="border-b border-border md:hidden">
         <Tabs value={mobileView} onValueChange={(v) => setMobileView(v as "lista" | "mapa")}>
           <TabsList className="w-full rounded-none bg-transparent p-2">
@@ -324,81 +331,82 @@ function JobsListingClient({
           )}
         >
           <div className="flex flex-col gap-3 border-b border-border bg-background/95 px-4 py-4 backdrop-blur sm:px-6">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-foreground">
-                Explora empleos
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {filteredJobs.length} vacante{filteredJobs.length === 1 ? "" : "s"} disponible
-                {filteredJobs.length === 1 ? "" : "s"}
-                {areaBounds ? " en esta área" : ""}
-              </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                  Explora empleos
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {filteredJobs.length} vacante{filteredJobs.length === 1 ? "" : "s"} disponible
+                  {filteredJobs.length === 1 ? "" : "s"}
+                  {areaBounds ? " en esta área" : ""}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Sheet>
+                  <SheetTrigger render={<Button variant="outline" size="sm" className="gap-2" />}>
+                    <FilterIcon className="size-4" />
+                    Filtros
+                    {activeFilterCount > 0 && (
+                      <span className="flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </SheetTrigger>
+                  <SheetContent side="left">
+                    <SheetHeader>
+                      <SheetTitle>Filtros</SheetTitle>
+                    </SheetHeader>
+                    <JobFilters
+                      {...filterProps}
+                      categoryNames={categoryNames}
+                      companyNames={companyNames}
+                      className="px-4 pb-6"
+                    />
+                  </SheetContent>
+                </Sheet>
+
+                <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue>{(value: SortOption) => SORT_LABELS[value]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(SORT_LABELS) as SortOption[])
+                      .filter((key) => key !== "distancia" || userLocation)
+                      .map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {SORT_LABELS[key]}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="relative flex items-center gap-2 rounded-xl bg-muted/60 px-3">
-              <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                  resetPaging()
-                }}
-                placeholder="Puesto, empresa o palabra clave"
-                className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
-              />
-            </div>
-            <div className="relative flex items-center gap-2 rounded-xl bg-muted/60 px-3">
-              <MapPinIcon className="size-4 shrink-0 text-muted-foreground" />
-              <Input
-                value={location}
-                onChange={(e) => {
-                  setLocation(e.target.value)
-                  resetPaging()
-                }}
-                placeholder="Ubicación"
-                className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <Sheet>
-                <SheetTrigger render={<Button variant="outline" size="sm" className="gap-2" />}>
-                  <FilterIcon className="size-4" />
-                  Filtros
-                  {activeFilterCount > 0 && (
-                    <span className="flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <SheetHeader>
-                    <SheetTitle>Filtros</SheetTitle>
-                  </SheetHeader>
-                  <JobFilters
-                    {...filterProps}
-                    categoryNames={categoryNames}
-                    companyNames={companyNames}
-                    className="px-4 pb-6"
-                  />
-                </SheetContent>
-              </Sheet>
-
-              <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
-                <SelectTrigger className="w-44">
-                  <SelectValue>{(value: SortOption) => SORT_LABELS[value]}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(SORT_LABELS) as SortOption[])
-                    .filter((key) => key !== "distancia" || userLocation)
-                    .map((key) => (
-                      <SelectItem key={key} value={key}>
-                        {SORT_LABELS[key]}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {hasQueryOrLocation && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">Buscando:</span>
+                {query.trim() && (
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-foreground">
+                    &ldquo;{query}&rdquo;
+                  </span>
+                )}
+                {location.trim() && (
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-foreground">
+                    {location}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleClearQueryLocation}
+                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <XIcon className="size-3" />
+                  Limpiar
+                </button>
+              </div>
+            )}
           </div>
 
           <div ref={listScrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">

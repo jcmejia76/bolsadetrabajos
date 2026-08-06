@@ -80,7 +80,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ path: stri
 }
 
 async function isAuthorized(
-  user: { role: Role; candidateId?: string; companyId?: string },
+  user: { id: string; role: Role; candidateId?: string; companyId?: string },
   folder: string,
   key: string
 ): Promise<boolean> {
@@ -103,7 +103,10 @@ async function isAuthorized(
 
   if (folder === "avatars") {
     const candidate = await prisma.candidate.findFirst({ where: { photoUrl: publicUrl } });
-    return !!candidate && candidate.id === user.candidateId;
+    if (candidate) return candidate.id === user.candidateId;
+
+    const owner = await prisma.user.findFirst({ where: { photoUrl: publicUrl } });
+    return !!owner && owner.id === user.id;
   }
 
   return false;

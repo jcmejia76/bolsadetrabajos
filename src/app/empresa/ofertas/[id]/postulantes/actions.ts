@@ -14,14 +14,16 @@ export async function updateApplicationStatusAction(
   input: unknown
 ): Promise<ActionResult<null>> {
   try {
-    const { companyId } = await requireCompanySession();
+    const { userId, companyId } = await requireCompanySession();
     const parsed = updateApplicationStatusSchema.safeParse(input);
     if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Datos inválidos");
 
     await applicationService.updateApplicationStatus(
       companyId,
       parsed.data.applicationId,
-      parsed.data.status
+      parsed.data.status,
+      userId,
+      parsed.data.note
     );
     revalidatePath(`/empresa/ofertas/${jobPostingId}/postulantes`);
     return actionOk(null);
