@@ -62,6 +62,22 @@ function MapController({ userLocation, onBoundsChange }: MapControllerProps) {
   return null
 }
 
+/** Leaflet computes tile layout from the container's size at mount time. On mobile the map
+ * starts out inside a `display:none` tab panel (until the user switches to "Mapa"), so it
+ * initializes at 0×0 and renders blank/broken tiles until something tells it to remeasure. */
+function MapResizeHandler() {
+  const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [map])
+
+  return null
+}
+
 /** Frames the map around the jobs available on first load, since they may be anywhere in the Americas. */
 function FitToJobsOnMount({ jobs }: { jobs: JobCardData[] }) {
   const map = useMap()
@@ -127,6 +143,7 @@ function LeafletMap({
       />
       <FitToJobsOnMount jobs={jobs} />
       <MapController userLocation={userLocation} onBoundsChange={onBoundsChange} />
+      <MapResizeHandler />
     </MapContainer>
   )
 }

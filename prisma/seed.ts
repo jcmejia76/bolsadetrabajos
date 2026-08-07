@@ -223,10 +223,78 @@ async function seedSystemStaffRoles() {
   console.log(`Roles de staff del sistema sembrados: ${created} nuevos (${SYSTEM_STAFF_ROLES.length} totales).`);
 }
 
+const CONTENT_PAGES: { slug: string; title: string; body: string }[] = [
+  {
+    slug: "privacidad",
+    title: "Política de Privacidad",
+    body: `
+<h2>1. Datos que recopilamos</h2>
+<p>Cuando creas una cuenta, publicas una vacante o subes tu currículum, recopilamos la información que nos proporcionas directamente: nombre, correo electrónico, teléfono, experiencia laboral, educación y demás datos de tu perfil profesional o de tu empresa.</p>
+<h2>2. Cómo usamos tus datos</h2>
+<p>Usamos tu información para operar la plataforma: mostrar tu perfil a empresas cuando aplicas a una vacante, permitir que las empresas publiquen y gestionen ofertas, enviarte notificaciones sobre tus postulaciones y mejorar la experiencia general del servicio.</p>
+<h2>3. Con quién compartimos tu información</h2>
+<p>Tu perfil de candidato y tu CV se comparten con las empresas a las que decides postularte. La información de empresas aprobadas es visible públicamente en la plataforma. No vendemos tus datos personales a terceros.</p>
+<h2>4. Seguridad</h2>
+<p>Aplicamos medidas técnicas razonables para proteger tu información, incluyendo el cifrado de contraseñas y controles de acceso basados en roles. Ningún sistema es 100% infalible, por lo que te recomendamos usar una contraseña única para tu cuenta.</p>
+<h2>5. Tus derechos</h2>
+<p>Puedes acceder, actualizar o eliminar la información de tu perfil en cualquier momento desde tu cuenta. Si necesitas ayuda adicional para ejercer estos derechos, puedes escribirnos desde la página de Soporte.</p>
+<h2>6. Cambios a esta política</h2>
+<p>Podemos actualizar esta política ocasionalmente para reflejar cambios en la plataforma. Publicaremos cualquier cambio importante en esta misma página.</p>
+`.trim(),
+  },
+  {
+    slug: "terminos",
+    title: "Términos y Condiciones",
+    body: `
+<h2>1. Aceptación de los términos</h2>
+<p>Al crear una cuenta o utilizar Bolsa de Trabajos, aceptas estos términos y condiciones. Si no estás de acuerdo, por favor no utilices la plataforma.</p>
+<h2>2. Cuentas de usuario</h2>
+<p>Eres responsable de mantener la confidencialidad de tu contraseña y de toda la actividad que ocurra en tu cuenta. Debes proporcionar información veraz al registrarte y mantenerla actualizada.</p>
+<h2>3. Uso de la plataforma</h2>
+<p>Las vacantes publicadas por empresas y los perfiles de candidatos pasan por un proceso de revisión antes de ser visibles públicamente. Está prohibido publicar contenido falso, engañoso, discriminatorio o que infrinja derechos de terceros.</p>
+<h2>4. Responsabilidad sobre el contenido</h2>
+<p>Bolsa de Trabajos actúa como intermediario entre candidatos y empresas. No garantizamos la veracidad de las vacantes publicadas ni de los perfiles de los candidatos, y no somos parte de la relación laboral que pueda surgir entre ambas partes.</p>
+<h2>5. Suspensión de cuentas</h2>
+<p>Nos reservamos el derecho de suspender o eliminar cuentas que incumplan estos términos, incluyendo el uso indebido de la plataforma, la publicación de contenido fraudulento o comportamiento abusivo hacia otros usuarios.</p>
+<h2>6. Cambios al servicio</h2>
+<p>Podemos modificar o discontinuar funciones de la plataforma en cualquier momento. Te notificaremos sobre cambios importantes que afecten significativamente tu uso del servicio.</p>
+<h2>7. Contacto</h2>
+<p>Si tienes dudas sobre estos términos, puedes escribirnos desde la página de Soporte.</p>
+`.trim(),
+  },
+  {
+    slug: "cookies",
+    title: "Política de Cookies",
+    body: `
+<h2>1. Qué son las cookies</h2>
+<p>Las cookies son pequeños archivos que un sitio web guarda en tu navegador para recordar información entre visitas, como el hecho de que iniciaste sesión.</p>
+<h2>2. Cookies que utilizamos</h2>
+<p>Usamos una cookie esencial de sesión para mantener tu inicio de sesión activo mientras navegas la plataforma. Esta cookie es necesaria para el funcionamiento del sitio y no puede desactivarse sin afectar tu capacidad de iniciar sesión.</p>
+<p>Actualmente no utilizamos cookies de publicidad ni de seguimiento de terceros con fines de marketing.</p>
+<h2>3. Cómo controlar las cookies</h2>
+<p>Puedes configurar tu navegador para bloquear o eliminar cookies. Ten en cuenta que bloquear la cookie de sesión impedirá que puedas mantener la sesión iniciada en la plataforma.</p>
+<h2>4. Cambios a esta política</h2>
+<p>Si en el futuro incorporamos nuevas cookies (por ejemplo, para analítica), actualizaremos esta página para reflejarlo.</p>
+`.trim(),
+  },
+];
+
+async function seedContentPages() {
+  let created = 0;
+  for (const page of CONTENT_PAGES) {
+    const existing = await prisma.contentPage.findUnique({ where: { slug: page.slug } });
+    if (existing) continue;
+    await prisma.contentPage.create({ data: page });
+    created += 1;
+  }
+  console.log(`Páginas de contenido sembradas: ${created} nuevas (${CONTENT_PAGES.length} totales).`);
+}
+
 async function main() {
   await seedAdmin();
   await seedJobCategories();
   await seedSystemStaffRoles();
+  await seedContentPages();
 
   if (process.argv.includes("--with-test-users")) {
     await seedTestUsers();

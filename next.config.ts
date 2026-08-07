@@ -43,6 +43,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  devIndicators: {
+    position: "top-left",
+  },
   async headers() {
     return [
       {

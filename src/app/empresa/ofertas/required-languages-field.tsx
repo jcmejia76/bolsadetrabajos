@@ -16,35 +16,44 @@ export function RequiredLanguagesField() {
   return (
     <div className="flex flex-col gap-3">
       {fields.map((field, index) => (
-        <div key={field.id} className="flex items-start gap-2">
+        <div key={field.id} className="flex flex-col gap-2 sm:flex-row sm:items-start">
           <Input
             placeholder="Idioma (ej. Inglés)"
             {...register(`requiredLanguages.${index}.language` as const)}
             className="flex-1"
           />
-          <Controller
-            control={control}
-            name={`requiredLanguages.${index}.level` as const}
-            render={({ field: levelField }) => (
-              <Select value={levelField.value} onValueChange={levelField.onChange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Nivel">
-                    {(value: string) => LANGUAGE_LEVEL_LABELS[value]}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(LanguageLevel).map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {LANGUAGE_LEVEL_LABELS[level]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} aria-label="Quitar idioma">
-            <Trash2 className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Controller
+              control={control}
+              name={`requiredLanguages.${index}.level` as const}
+              render={({ field: levelField }) => (
+                <Select value={levelField.value} onValueChange={levelField.onChange}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="Nivel">
+                      {(value: string) => LANGUAGE_LEVEL_LABELS[value]}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(LanguageLevel).map((level) => (
+                      <SelectItem key={level} value={level}>
+                        {LANGUAGE_LEVEL_LABELS[level]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => remove(index)}
+              aria-label="Quitar idioma"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
         </div>
       ))}
       <Button

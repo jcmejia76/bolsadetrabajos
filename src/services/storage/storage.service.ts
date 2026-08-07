@@ -1,4 +1,4 @@
-export type StorageFolder = "cvs" | "avatars" | "logos";
+export type StorageFolder = "cvs" | "avatars" | "logos" | "site";
 
 export interface UploadInput {
   buffer: Buffer;

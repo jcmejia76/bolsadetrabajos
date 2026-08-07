@@ -102,7 +102,7 @@ function JobMapPanel({
         )}
       </div>
 
-      <div className="absolute right-4 bottom-4 z-[500] flex flex-col items-end gap-2">
+      <div className="absolute inset-x-0 bottom-4 z-[500] flex flex-col items-center gap-2">
         {geoError && (
           <span className="rounded-lg bg-card px-3 py-1.5 text-xs text-destructive shadow-md">
             {geoError}

@@ -4,7 +4,7 @@ import { requireRole, enforceStaffActiveOrRedirect } from "@/lib/auth-utils";
 import { Role, Permission } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen";
-import { getMaintenanceState } from "@/services/settings/site-settings.service";
+import { getMaintenanceState, getSiteBranding } from "@/services/settings/site-settings.service";
 import { getCompanyStaffPermissions } from "@/services/staff/staff.service";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 import { listRecentNotifications, countUnreadNotifications } from "@/services/notification/notification.service";
@@ -14,7 +14,8 @@ export default async function EmpresaLayout({ children }: { children: React.Reac
   await enforceStaffActiveOrRedirect(session.user.id);
 
   const { maintenanceMode, maintenanceMessage } = await getMaintenanceState();
-  if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />;
+  const { logoUrl } = await getSiteBranding();
+  if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} logoUrl={logoUrl} />;
 
   const [{ isOwner, permissions }, notifications, unreadCount] = await Promise.all([
     getCompanyStaffPermissions(session.user.id, session.user.companyId!),
@@ -40,6 +41,7 @@ export default async function EmpresaLayout({ children }: { children: React.Reac
       panelLabel="Panel de Empresa"
       userLabel={session.user.email ?? undefined}
       notificationsSlot={<NotificationsBell notifications={notifications} unreadCount={unreadCount} />}
+      logoUrl={logoUrl}
     >
       {children}
     </SidebarShell>

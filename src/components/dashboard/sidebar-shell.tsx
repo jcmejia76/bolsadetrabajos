@@ -29,6 +29,7 @@ interface SidebarShellProps {
   panelLabel: string
   userLabel?: string
   notificationsSlot?: ReactNode
+  logoUrl?: string | null
   children: ReactNode
 }
 
@@ -85,12 +86,19 @@ function SignOutForm({ collapsedLabel = "Cerrar sesión" }: { collapsedLabel?: s
   )
 }
 
-function Brand() {
+function Brand({ logoUrl }: { logoUrl?: string | null }) {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <BriefcaseBusinessIcon className="size-4.5" />
-      </span>
+      {logoUrl ? (
+        <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoUrl} alt="Bolsa de Trabajos" className="size-full object-contain" />
+        </span>
+      ) : (
+        <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <BriefcaseBusinessIcon className="size-4.5" />
+        </span>
+      )}
       <span className="text-[15px] font-semibold tracking-tight text-foreground">
         Bolsa de Trabajos
       </span>
@@ -103,6 +111,7 @@ function SidebarShell({
   panelLabel,
   userLabel,
   notificationsSlot,
+  logoUrl,
   children,
 }: SidebarShellProps) {
   const pathname = usePathname()
@@ -113,7 +122,7 @@ function SidebarShell({
       <SkipLink />
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card px-4 py-5 lg:flex">
         <div className="mb-6 flex items-center justify-between px-1">
-          <Brand />
+          <Brand logoUrl={logoUrl} />
           {notificationsSlot}
         </div>
         <div className="mb-4 px-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -130,7 +139,7 @@ function SidebarShell({
         </div>
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-card px-4 lg:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger render={<Button variant="ghost" size="icon" />}>
@@ -140,7 +149,7 @@ function SidebarShell({
             <SheetContent side="left" className="flex w-72 flex-col">
               <SheetHeader>
                 <SheetTitle>
-                  <Brand />
+                  <Brand logoUrl={logoUrl} />
                 </SheetTitle>
               </SheetHeader>
               <div className="mb-2 px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">

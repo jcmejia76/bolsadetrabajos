@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth-utils";
 import { Role } from "@/generated/prisma/enums";
 import { SidebarShell, type DashboardNavItem } from "@/components/dashboard/sidebar-shell";
 import { MaintenanceScreen } from "@/components/maintenance/maintenance-screen";
-import { getMaintenanceState } from "@/services/settings/site-settings.service";
+import { getMaintenanceState, getSiteBranding } from "@/services/settings/site-settings.service";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 import { listRecentNotifications, countUnreadNotifications } from "@/services/notification/notification.service";
 
@@ -21,7 +21,8 @@ export default async function CandidatoLayout({ children }: { children: React.Re
   const session = await requireRole(Role.CANDIDATO);
 
   const { maintenanceMode, maintenanceMessage } = await getMaintenanceState();
-  if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} />;
+  const { logoUrl } = await getSiteBranding();
+  if (maintenanceMode) return <MaintenanceScreen message={maintenanceMessage} logoUrl={logoUrl} />;
 
   const [notifications, unreadCount] = await Promise.all([
     listRecentNotifications(session.user.id),
@@ -34,6 +35,7 @@ export default async function CandidatoLayout({ children }: { children: React.Re
       panelLabel="Panel de Candidato"
       userLabel={session.user.email ?? undefined}
       notificationsSlot={<NotificationsBell notifications={notifications} unreadCount={unreadCount} />}
+      logoUrl={logoUrl}
     >
       {children}
     </SidebarShell>

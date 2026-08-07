@@ -98,33 +98,29 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    label: "Candidatos",
-    href: "/candidato",
-    children: [
-      { label: "Panel de candidato", href: "/candidato" },
-      { label: "Crear tu perfil", href: "/login" },
-      { label: "Subir tu CV", href: "/login" },
-      { label: "Empleos guardados", href: "/candidato/favoritos" },
-    ],
-  },
-  {
     label: "Páginas",
     children: [
       { label: "Cómo funciona", href: "/#como-funciona" },
       { label: "Testimonios", href: "/#testimonios" },
       { label: "Preguntas frecuentes", href: "/#como-funciona" },
-      { label: "Acceso administrador", href: "/login" },
     ],
   },
 ]
 
-function Logo() {
+function Logo({ logoUrl }: { logoUrl?: string | null }) {
   return (
-    <Link href="/" className="flex h-11 shrink-0 items-center gap-2.5">
-      <span className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <BriefcaseBusinessIcon className="size-5.5" />
-      </span>
-      <span className="text-[18px] font-semibold tracking-tight text-foreground">
+    <Link href="/" className="flex h-8 shrink-0 items-center gap-2 md:h-11 md:gap-2.5">
+      {logoUrl ? (
+        <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg md:size-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoUrl} alt="Bolsa de Trabajos" className="size-full object-contain" />
+        </span>
+      ) : (
+        <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground md:size-10">
+          <BriefcaseBusinessIcon className="size-4.5 md:size-5.5" />
+        </span>
+      )}
+      <span className="text-[15px] font-semibold tracking-tight text-foreground md:text-[18px]">
         Bolsa de Trabajos
       </span>
     </Link>
@@ -330,7 +326,7 @@ function HeaderSearchForm({
         />
       </div>
       <Select name="category">
-        <SelectTrigger className="hidden h-11 w-[190px] shrink-0 justify-between rounded-xl border-none bg-transparent px-3.5 text-[15px] shadow-none lg:flex">
+        <SelectTrigger className="hidden h-11 w-[190px] shrink-0 justify-between rounded-xl border-none bg-transparent px-3.5 text-[15px] shadow-none xl:flex">
           <SelectValue placeholder="Categorías">
             {(value: string) => value || "Categorías"}
           </SelectValue>
@@ -386,6 +382,7 @@ function MobileNavItem({ item, pathname }: { item: NavItem; pathname: string }) 
     return (
       <SheetClose
         render={<Link href={item.href ?? "#"} />}
+        nativeButton={false}
         className={cn(
           "block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent",
           active && "text-primary"
@@ -407,6 +404,7 @@ function MobileNavItem({ item, pathname }: { item: NavItem; pathname: string }) 
         {item.href ? (
           <SheetClose
             render={<Link href={item.href} />}
+            nativeButton={false}
             onClick={(e) => e.stopPropagation()}
             className="hover:underline"
           >
@@ -422,6 +420,7 @@ function MobileNavItem({ item, pathname }: { item: NavItem; pathname: string }) 
             <SheetClose
               key={child.label}
               render={<Link href={child.href} />}
+              nativeButton={false}
               className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               {child.label}
@@ -433,7 +432,15 @@ function MobileNavItem({ item, pathname }: { item: NavItem; pathname: string }) 
   )
 }
 
-function Navbar({ user, categories }: { user: NavbarUser | null; categories: NavbarCategory[] }) {
+function Navbar({
+  user,
+  categories,
+  logoUrl,
+}: {
+  user: NavbarUser | null
+  categories: NavbarCategory[]
+  logoUrl?: string | null
+}) {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -454,17 +461,24 @@ function Navbar({ user, categories }: { user: NavbarUser | null; categories: Nav
           : "border-transparent shadow-none"
       )}
     >
-      <div className="grid h-[83px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center">
-          <Logo />
+      <div
+        className={cn(
+          "grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6",
+          "[grid-template-areas:'logo_actions'_'search_search']",
+          "md:h-[83px] md:grid-cols-[1fr_auto_1fr] md:py-0 md:[grid-template-areas:'logo_search_actions']",
+          "lg:px-8"
+        )}
+      >
+        <div className="flex min-w-0 items-center [grid-area:logo] md:min-w-max">
+          <Logo logoUrl={logoUrl} />
         </div>
 
         <HeaderSearchForm
           categories={categories}
-          className="hidden w-full max-w-4xl md:flex"
+          className="flex w-full [grid-area:search] md:max-w-4xl"
         />
 
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex min-w-0 items-center justify-end gap-4 [grid-area:actions] md:min-w-max">
           <div className="hidden items-center gap-4 lg:flex">
             {user ? (
               <UserMenu user={user} />
@@ -504,10 +518,9 @@ function Navbar({ user, categories }: { user: NavbarUser | null; categories: Nav
             <SheetContent side="right" className="w-full max-w-xs">
             <SheetHeader>
               <SheetTitle>
-                <Logo />
+                <Logo logoUrl={logoUrl} />
               </SheetTitle>
             </SheetHeader>
-            <HeaderSearchForm categories={categories} className="mb-4 flex md:hidden" />
             <Accordion className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => (
                 <MobileNavItem key={item.label} item={item} pathname={pathname} />
@@ -532,6 +545,7 @@ function Navbar({ user, categories }: { user: NavbarUser | null; categories: Nav
                       <SheetClose
                         key={link.href}
                         render={<Link href={link.href} />}
+                        nativeButton={false}
                         className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                       >
                         {link.label}

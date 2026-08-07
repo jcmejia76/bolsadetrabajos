@@ -13,20 +13,29 @@ export function SocialLinksField() {
   return (
     <div className="flex flex-col gap-3">
       {fields.map((field, index) => (
-        <div key={field.id} className="flex items-start gap-2">
+        <div key={field.id} className="flex flex-col gap-2 sm:flex-row sm:items-start">
           <Input
             placeholder="Plataforma (ej. LinkedIn)"
             {...register(`socialLinks.${index}.platform` as const)}
-            className="w-40"
+            className="w-full sm:w-40"
           />
-          <Input
-            placeholder="https://..."
-            {...register(`socialLinks.${index}.url` as const)}
-            className="flex-1"
-          />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} aria-label="Quitar red">
-            <Trash2 className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="https://..."
+              {...register(`socialLinks.${index}.url` as const)}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => remove(index)}
+              aria-label="Quitar red"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
         </div>
       ))}
       <Button

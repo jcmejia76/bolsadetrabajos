@@ -124,6 +124,13 @@ enum NotificationChannel {
   WHATSAPP
 }
 
+enum SupportRequestStatus {
+  ABIERTO
+  EN_PROCESO
+  RESUELTO
+  CERRADO
+}
+
 // ========================= STAFF / RBAC =========================
 
 enum StaffScope {
@@ -231,6 +238,9 @@ model User {
   updatedSiteSettings SiteSettings[]    @relation("SiteSettingsUpdatedBy")
   staffAccount        StaffMember?      @relation("StaffAccount")
   invitedStaff        StaffMember[]     @relation("StaffInvitedBy")
+  supportRequests         SupportRequest[] @relation("SupportRequestUser")
+  resolvedSupportRequests SupportRequest[] @relation("SupportRequestResolvedBy")
+  updatedContentPages     ContentPage[]    @relation("ContentPageUpdatedBy")
 
   @@index([role])
 }
@@ -593,9 +603,55 @@ model SiteSettings {
   id                 String   @id @default(cuid())
   maintenanceMode    Boolean  @default(false)
   maintenanceMessage String?  @db.Text
+  logoUrl            String?
+  faviconUrl         String?
   updatedById        String?
   updatedBy          User?    @relation("SiteSettingsUpdatedBy", fields: [updatedById], references: [id])
   updatedAt          DateTime @updatedAt
+}
+
+// ========================= SUPPORT =========================
+
+model SupportRequest {
+  id     String  @id @default(cuid())
+  userId String?
+  user   User?   @relation("SupportRequestUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  name    String
+  email   String
+  subject String
+  message String @db.Text
+
+  status       SupportRequestStatus @default(ABIERTO)
+  adminNote    String?              @db.Text
+  resolvedById String?
+  resolvedBy   User?                @relation("SupportRequestResolvedBy", fields: [resolvedById], references: [id])
+  resolvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([userId])
+}
+
+// ========================= CONTENT PAGES =========================
+
+/// Admin-editable static pages (privacy policy, terms, cookies, etc.), served
+/// publicly at /<slug>.
+model ContentPage {
+  id             String  @id @default(cuid())
+  title          String
+  slug           String  @unique
+  body           String  @db.Text
+  seoTitle       String?
+  seoDescription String?
+
+  updatedById String?
+  updatedBy   User?   @relation("ContentPageUpdatedBy", fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ========================= STAFF / RBAC =========================

@@ -63,7 +63,7 @@ function AccessibilityWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-40">
+    <div className="fixed bottom-5 left-5 z-40">
       <Popover>
         <PopoverTrigger
           render={
@@ -78,9 +78,10 @@ function AccessibilityWidget() {
         </PopoverTrigger>
         <PopoverContent
           side="top"
-          align="end"
+          align="start"
           sideOffset={12}
-          className="w-80 max-h-[70vh] overflow-y-auto"
+          positionMethod="fixed"
+          className="w-80 max-h-[70vh] max-w-[calc(100vw-2.5rem)] overflow-y-auto"
         >
           <div className="flex items-center justify-between gap-2 pb-2">
             <p className="text-sm font-semibold text-foreground">Accesibilidad</p>

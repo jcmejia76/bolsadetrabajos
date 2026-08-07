@@ -33,3 +33,111 @@ export async function setMaintenanceModeAction(input: unknown): Promise<ActionRe
     return actionError(errorMessage(e));
   }
 }
+
+function revalidateBranding() {
+  revalidatePath("/admin/configuracion");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/empresa", "layout");
+  revalidatePath("/candidato", "layout");
+}
+
+export async function uploadSiteLogoAction(formData: FormData): Promise<ActionResult<{ logoUrl: string }>> {
+  try {
+    const { userId } = await requireAdminSession();
+    const file = formData.get("file");
+    if (!(file instanceof File)) return actionError("Archivo no válido");
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const logoUrl = await siteSettingsService.updateSiteLogo(
+      { buffer, originalName: file.name, mimeType: file.type },
+      userId
+    );
+
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "UPDATE_SITE_LOGO",
+      entityType: "SiteSettings",
+      ipAddress,
+      userAgent,
+    });
+
+    revalidateBranding();
+    return actionOk({ logoUrl });
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}
+
+export async function removeSiteLogoAction(): Promise<ActionResult<null>> {
+  try {
+    const { userId } = await requireAdminSession();
+    await siteSettingsService.removeSiteLogo(userId);
+
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "REMOVE_SITE_LOGO",
+      entityType: "SiteSettings",
+      ipAddress,
+      userAgent,
+    });
+
+    revalidateBranding();
+    return actionOk(null);
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}
+
+export async function uploadSiteFaviconAction(
+  formData: FormData
+): Promise<ActionResult<{ faviconUrl: string }>> {
+  try {
+    const { userId } = await requireAdminSession();
+    const file = formData.get("file");
+    if (!(file instanceof File)) return actionError("Archivo no válido");
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const faviconUrl = await siteSettingsService.updateSiteFavicon(
+      { buffer, originalName: file.name, mimeType: file.type },
+      userId
+    );
+
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "UPDATE_SITE_FAVICON",
+      entityType: "SiteSettings",
+      ipAddress,
+      userAgent,
+    });
+
+    revalidateBranding();
+    return actionOk({ faviconUrl });
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}
+
+export async function removeSiteFaviconAction(): Promise<ActionResult<null>> {
+  try {
+    const { userId } = await requireAdminSession();
+    await siteSettingsService.removeSiteFavicon(userId);
+
+    const { ipAddress, userAgent } = await getRequestMeta();
+    await logAudit({
+      actorId: userId,
+      action: "REMOVE_SITE_FAVICON",
+      entityType: "SiteSettings",
+      ipAddress,
+      userAgent,
+    });
+
+    revalidateBranding();
+    return actionOk(null);
+  } catch (e) {
+    return actionError(errorMessage(e));
+  }
+}

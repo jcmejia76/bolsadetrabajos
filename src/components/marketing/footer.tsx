@@ -6,6 +6,7 @@ import { ArrowRightIcon, BriefcaseBusinessIcon } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { openSupportChat } from "@/components/support/support-chat-widget"
 
 function LinkedinGlyph(props: SVGProps<SVGSVGElement>) {
   return (
@@ -47,17 +48,15 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/empleos", label: "Buscar empleos" },
       { href: "/empresas", label: "Explorar empresas" },
-      { href: "/login", label: "Crear cuenta" },
-      { href: "/login", label: "Mi perfil" },
+      { href: "/registro", label: "Crear cuenta" },
     ],
   },
   {
     title: "Para empresas",
     links: [
-      { href: "/login", label: "Publicar una vacante" },
-      { href: "/login", label: "Panel de empresa" },
+      { href: "/registro?type=empresa", label: "Publicar una vacante" },
       { href: "/empresas", label: "Ver empresas" },
-      { href: "/login", label: "Planes y precios" },
+      { href: "/registro?type=empresa", label: "Planes y precios" },
     ],
   },
   {
@@ -65,8 +64,8 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/#como-funciona", label: "Cómo funciona" },
       { href: "/#testimonios", label: "Testimonios" },
-      { href: "/#contacto", label: "Contacto" },
-      { href: "/login", label: "Soporte" },
+      { href: "/contacto", label: "Contacto" },
+      { href: "#soporte-chat", label: "Soporte" },
     ],
   },
 ] as const
@@ -78,7 +77,7 @@ const SOCIALS = [
   { href: "#", icon: InstagramGlyph, label: "Instagram" },
 ] as const
 
-function Footer() {
+function Footer({ logoUrl }: { logoUrl?: string | null }) {
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-[#0f172a] to-[#0b1220] text-white">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-particles opacity-20" />
@@ -86,9 +85,16 @@ function Footer() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1.2fr]">
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-white">
-                <BriefcaseBusinessIcon className="size-4.5" />
-              </span>
+              {logoUrl ? (
+                <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logoUrl} alt="Bolsa de Trabajos" className="size-full object-contain" />
+                </span>
+              ) : (
+                <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-white">
+                  <BriefcaseBusinessIcon className="size-4.5" />
+                </span>
+              )}
               <span className="text-[15px] font-semibold tracking-tight text-white">
                 Bolsa de Trabajos
               </span>
@@ -118,16 +124,28 @@ function Footer() {
                 {column.title}
               </h3>
               <ul className="flex flex-col gap-2.5">
-                {column.links.map((link, i) => (
-                  <li key={`${link.href}-${i}`}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-white/60 transition-colors hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                {column.links.map((link, i) =>
+                  link.href === "#soporte-chat" ? (
+                    <li key={`${link.href}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={openSupportChat}
+                        className="text-sm text-white/60 transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </button>
+                    </li>
+                  ) : (
+                    <li key={`${link.href}-${i}`}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-white/60 transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           ))}
@@ -163,11 +181,14 @@ function Footer() {
             derechos reservados.
           </p>
           <div className="flex items-center gap-6 text-sm text-white/50">
-            <Link href="/login" className="hover:text-white">
+            <Link href="/privacidad" className="hover:text-white">
               Privacidad
             </Link>
-            <Link href="/login" className="hover:text-white">
+            <Link href="/terminos" className="hover:text-white">
               Términos
+            </Link>
+            <Link href="/cookies" className="hover:text-white">
+              Cookies
             </Link>
           </div>
         </div>

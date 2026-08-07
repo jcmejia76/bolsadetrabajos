@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { auth } from "@/auth";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { AccessibilityWidget } from "@/components/accessibility/accessibility-widget";
+import { SupportChatWidget } from "@/components/support/support-chat-widget";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -22,11 +24,15 @@ export const metadata: Metadata = {
   description: "Plataforma de empleo para empresas y candidatos",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const initialName = session?.user?.name ?? "";
+  const initialEmail = session?.user?.email ?? "";
+
   return (
     <html
       lang="es"
@@ -40,6 +46,7 @@ export default function RootLayout({
               {children}
               <Toaster />
               <AccessibilityWidget />
+              <SupportChatWidget initialName={initialName} initialEmail={initialEmail} />
             </MotionProvider>
           </AccessibilityProvider>
         </ThemeProvider>
